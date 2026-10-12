@@ -1,1630 +1,1460 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-
-  <title>Mi biblioteca</title>
-
-  <meta name="description" content="Tu biblioteca personal de libros PDF.">
-  <meta name="theme-color" content="#100b19">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Mi biblioteca">
-
-  <!-- Instalación como aplicación -->
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" href="./icon-192.png">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-
-  <!-- Lector PDF y animación de páginas -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-
-  <script>
-  window.PageFlip = window.PageFlip || (window.St && window.St.PageFlip);
-</script>
-
-  <style>
-    :root {
-      --bg: #100b19;
-      --panel: #1b1427;
-      --panel2: #251b34;
-      --text: #f8f3ff;
-      --muted: #b7a9c9;
-      --accent: #c4a0ff;
-      --accent2: #8b5cf6;
-      --border: rgba(210,185,255,.15);
-      --shadow: 0 16px 45px rgba(0,0,0,.25);
-    }
-
-    body.light {
-      --bg: #f6f1fc;
-      --panel: #ffffff;
-      --panel2: #eee5fa;
-      --text: #281c37;
-      --muted: #766782;
-      --accent: #8050c9;
-      --accent2: #a477e8;
-      --border: rgba(85,52,125,.15);
-      --shadow: 0 16px 45px rgba(70,40,100,.10);
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      transition: background .2s, color .2s;
-    }
-
-    button, input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    button:focus-visible, input:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 1150px;
-      min-height: 100vh;
-      margin: auto;
-      padding: max(20px, env(safe-area-inset-top)) 18px 35px;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-icon {
-      display: grid;
-      place-items: center;
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-      border-radius: 16px;
-      background: linear-gradient(145deg, #b993ff, #7040bb);
-      color: white;
-      font-size: 25px;
-      box-shadow: 0 6px 24px #8b5cf633;
-    }
-
-    .brand h1 {
-      font-size: 21px;
-      line-height: 1.2;
-      margin: 0;
-      letter-spacing: -.5px;
-    }
-
-    .brand p {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .icon-btn {
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-      font-size: 19px;
-    }
-
-    .welcome {
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background:
-        radial-gradient(ellipse at 100% 0%, #8b5cf629, transparent 55%),
-        var(--panel);
-      margin-bottom: 25px;
-    }
-
-    .welcome h2 {
-      margin: 0 0 8px;
-      font-size: clamp(23px, 5vw, 31px);
-      letter-spacing: -.8px;
-    }
-
-    .welcome p {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0 0 20px;
-    }
-
-    .primary-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 45px;
-      padding: 12px 18px;
-      border: 0;
-      border-radius: 14px;
-      background: linear-gradient(120deg, #a87af3, #7545c4);
-      color: white;
-      font-weight: 650;
-      box-shadow: 0 8px 22px #8b5cf629;
-    }
-
-    .primary-btn:disabled {
-      opacity: .55;
-      cursor: wait;
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 25px 0 16px;
-    }
-
-    .section-heading h2 {
-      font-size: 19px;
-      margin: 0;
-    }
-
-    .count {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .search-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .search {
-      width: 100%;
-      min-width: 0;
-      padding: 13px 15px;
-      color: var(--text);
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      outline: none;
-    }
-
-    .search::placeholder {
-      color: var(--muted);
-    }
-
-    .filter-btn {
-      flex-shrink: 0;
-      padding: 0 13px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--panel);
-      color: var(--text);
-    }
-
-    .filter-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .library {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-      gap: 17px;
-    }
-
-    .book-card {
-      position: relative;
-      min-width: 0;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .book-cover {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      aspect-ratio: 3 / 4;
-      overflow: hidden;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      background:
-        radial-gradient(circle at 70% 25%, #c4a0ff55, transparent 38%),
-        linear-gradient(145deg, #34204c, #171021);
-      color: #e8d9ff;
-      font-size: 46px;
-    }
-
-    .book-card h3 {
-      margin: 0 0 7px;
-      font-size: 14px;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
-    }
-
-    .book-meta {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-
-    .progress {
-      width: 100%;
-      height: 4px;
-      background: var(--panel2);
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 8px 0 12px;
-    }
-
-    .progress > div {
-      height: 100%;
-      background: linear-gradient(90deg, #a77bf4, #d2b9ff);
-      border-radius: inherit;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 7px;
-    }
-
-    .card-actions button {
-      flex: 1;
-      min-width: 0;
-      padding: 9px 4px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--panel2);
-      color: var(--text);
-      font-size: 12px;
-    }
-
-    .card-actions .read-btn {
-      background: #8b5cf6;
-      color: white;
-      border-color: transparent;
-    }
-
-    .empty {
-      grid-column: 1 / -1;
-      padding: 38px 18px;
-      text-align: center;
-      border: 1px dashed var(--border);
-      border-radius: 20px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .empty .empty-icon {
-      font-size: 38px;
-      margin-bottom: 10px;
-    }
-
-    .note {
-      margin-top: 26px;
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-
-    /* LECTOR PDF */
-
-    #reader {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      background: #0d0913;
-      color: #f8f3ff;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    #reader.open {
-      display: flex;
-    }
-
-    .reader-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 14px;
-      min-height: 62px;
-      background: #171020;
-      border-bottom: 1px solid #ffffff12;
-      transition: opacity .2s;
-    }
-
-    .reader-title {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .reader-title strong {
-      display: block;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .reader-title span {
-      display: block;
-      margin-top: 4px;
-      color: #b9a9cc;
-      font-size: 11px;
-    }
-
-    .reader-actions {
-      display: flex;
-      gap: 7px;
-    }
-
-    .reader-actions button,
-    .reader-bottom button,
-    .float-exit {
-      display: grid;
-      place-items: center;
-      width: 40px;
-      height: 40px;
-      flex-shrink: 0;
-      border: 1px solid #ffffff20;
-      border-radius: 12px;
-      background: #ffffff0b;
-      color: #fff;
-      font-size: 17px;
-    }
-
-    #bookStage {
-      position: relative;
-      display: flex;
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background:
-        radial-gradient(ellipse at 50% 45%, #291b3d 0%, #100b19 70%);
-      touch-action: pan-y;
-    }
-
-    #flipbook {
-      margin: auto;
-    }
-
-    .page {
-      background: #fff;
-      color: #222;
-      overflow: hidden;
-    }
-
-    .page-content {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .page-content canvas {
-      display: block;
-      max-width: none;
-      max-height: none;
-      flex-shrink: 0;
-      transform-origin: center center;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .page-loading {
-      padding: 15px;
-      text-align: center;
-      color: #8b7b9b;
-      font-size: 13px;
-    }
-
-    .page-number {
-      position: absolute;
-      z-index: 3;
-      right: 8px;
-      bottom: 5px;
-      padding: 2px 5px;
-      border-radius: 5px;
-      color: #82748d;
-      background: #ffffffc9;
-      font-size: 9px;
-      pointer-events: none;
-    }
-
-    .reader-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      min-height: 65px;
-      padding: 9px 12px;
-      background: #171020;
-      border-top: 1px solid #ffffff12;
-      transition: opacity .2s;
-    }
-
-    .reader-bottom button {
-      width: 42px;
-      height: 42px;
-    }
-
-    .reader-bottom button:disabled {
-      opacity: .3;
-      cursor: default;
-    }
-
-    #pageInfo {
-      min-width: 94px;
-      text-align: center;
-      color: #e9ddf9;
-      font-size: 13px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .zoom-controls {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .zoom-controls button {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 1px solid #ffffff20;
-      background: #ffffff0b;
-      color: white;
-      font-size: 18px;
-    }
-
-    #zoomLabel {
-      min-width: 45px;
-      text-align: center;
-      font-size: 11px;
-      color: #d8c8ee;
-    }
-
-    .float-exit {
-      display: none;
-      position: absolute;
-      top: max(10px, env(safe-area-inset-top));
-      right: 10px;
-      z-index: 15;
-      width: 39px;
-      height: 39px;
-      background: #21152fdc;
-      box-shadow: 0 4px 20px #0005;
-    }
-
-    #reader.immersive .reader-top,
-    #reader.immersive .reader-bottom {
-      display: none;
-    }
-
-    #reader.immersive .float-exit {
-      display: grid;
-    }
-
-    #reader.immersive #bookStage {
-      background: #09060d;
-    }
-
-    .toast {
-      position: fixed;
-      z-index: 2000;
-      left: 50%;
-      bottom: max(25px, env(safe-area-inset-bottom));
-      transform: translateX(-50%);
-      max-width: calc(100% - 30px);
-      padding: 12px 17px;
-      border: 1px solid #ffffff22;
-      border-radius: 13px;
-      background: #261b35;
-      color: #fff;
-      font-size: 13px;
-      line-height: 1.5;
-      text-align: center;
-      box-shadow: 0 10px 35px #0006;
-    }
-
-    .toast[hidden] {
-      display: none;
-    }
-
-    /* Escritorio: limitar el espacio para que el libro no sea gigante */
-    @media (min-width: 768px) {
-      #bookStage {
-        padding: 20px;
-      }
-
-      #flipbook {
-        max-width: 840px;
-        margin: auto;
-      }
-    }
-
-    @media (min-width: 700px) {
-      .app {
-        padding-left: 28px;
-        padding-right: 28px;
-      }
-
-      .library {
-        grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-        gap: 22px;
-      }
-
-      .book-card {
-        padding: 14px;
-      }
-    }
-
-    @media (max-width: 767px) {
-      #bookStage {
-        padding: 0;
-      }
-
-      #flipbook {
-        max-width: 100vw;
-        margin: auto;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .app {
-        padding-left: 12px;
-        padding-right: 12px;
-      }
-
-      .library {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 11px;
-      }
-
-      .book-card {
-        padding: 9px;
-      }
-
-      .reader-actions {
-        gap: 4px;
-      }
-
-      .reader-actions button {
-        width: 35px;
-        height: 35px;
-      }
-
-      .reader-bottom {
-        gap: 6px;
-      }
-
-      #pageInfo {
-        min-width: 76px;
-        font-size: 11px;
-      }
-
-      .zoom-controls {
-        gap: 3px;
-      }
-
-      .zoom-controls button {
-        width: 30px;
-        height: 34px;
-      }
-
-      #zoomLabel {
-        min-width: 36px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#100b19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi biblioteca">
+<title>Mi biblioteca</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #100b19;
+  --panel: #191224;
+  --panel2: #21172f;
+  --text: #f7f1ff;
+  --muted: #a99bb9;
+  --accent: #bd91ff;
+  --accent2: #8956d9;
+  --border: rgba(211,180,255,.16);
+  --danger: #ff8298;
+  --shadow: 0 18px 60px rgba(0,0,0,.3);
+}
+
+body.light {
+  color-scheme: light;
+  --bg: #f7f3fc;
+  --panel: #ffffff;
+  --panel2: #eee6f8;
+  --text: #261a35;
+  --muted: #786887;
+  --accent: #8956d9;
+  --accent2: #7040be;
+  --border: rgba(80,45,120,.15);
+  --shadow: 0 18px 50px rgba(70,40,100,.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+  transition: background .2s, color .2s;
+}
+
+button, input { font: inherit; }
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.app {
+  max-width: 1180px;
+  margin: auto;
+  padding: 24px 20px 50px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  color: white;
+  font-size: 24px;
+  background: linear-gradient(145deg,#c39aff,#7540c4);
+  box-shadow: 0 8px 25px rgba(139,81,220,.3);
+}
+
+.brand h1 {
+  font-size: 21px;
+  margin: 0;
+  letter-spacing: -.5px;
+}
+
+.brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn, .secondary-btn, .primary-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 13px;
+  min-height: 43px;
+  padding: 0 14px;
+}
+
+.icon-btn {
+  width: 44px;
+  padding: 0;
+  font-size: 19px;
+}
+
+.primary-btn {
+  color: white;
+  background: linear-gradient(135deg,#ad7cf5,#7a49c5);
+  border: 0;
+  font-weight: 650;
+  box-shadow: 0 7px 20px rgba(137,86,217,.2);
+}
+
+.primary-btn:hover { filter: brightness(1.08); }
+.secondary-btn:hover, .icon-btn:hover { border-color: var(--accent); }
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 30px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 90% 0%,rgba(160,102,238,.2),transparent 48%),
+    var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 750;
+}
+
+.hero h2 {
+  margin: 12px 0;
+  max-width: 600px;
+  font-size: clamp(27px,5vw,42px);
+  line-height: 1.1;
+  letter-spacing: -1.3px;
+}
+
+.hero p {
+  max-width: 560px;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat {
+  padding: 17px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 17px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 24px;
+}
+
+.stat span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.search {
+  width: min(100%,280px);
+  padding: 12px 14px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.filter {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 12px;
+}
+
+.filter.active {
+  background: var(--accent);
+  color: #20122f;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(155px,1fr));
+  gap: 17px;
+}
+
+.book-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 18px;
+  transition: transform .2s,border-color .2s;
+}
+
+.book-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 80% 15%,rgba(255,255,255,.2),transparent 30%),
+    linear-gradient(145deg,#b18aeb,#533078);
+  color: white;
+}
+
+.cover::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 8px;
+}
+
+.cover-icon { font-size: 48px; }
+.cover-label {
+  position: absolute;
+  bottom: 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.book-title {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.book-meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.progress {
+  height: 4px;
+  margin: 12px 0;
+  overflow: hidden;
+  background: var(--panel2);
+  border-radius: 9px;
+}
+
+.progress > div {
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+}
+
+.card-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.card-actions button {
+  flex: 1;
+  min-width: 0;
+  min-height: 35px;
+  padding: 6px;
+  font-size: 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+}
+
+.card-actions .open-card {
+  background: var(--accent);
+  color: #20122f;
+  font-weight: 750;
+  border-color: transparent;
+}
+
+.empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 55px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+}
+
+.empty .empty-icon { font-size: 42px; }
+.empty h3 { color: var(--text); }
+
+footer {
+  padding: 35px 0 10px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Lector */
+
+.reader {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: #100b19;
+  color: #f7f1ff;
+  padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
+}
+
+.reader.active { display: flex; }
+
+.reader-top {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reader-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.reader-tools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.reader-tools button, .reader-top button {
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: #21172f;
+  color: white;
+  padding: 0 10px;
+}
+
+.reader-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+  touch-action: pan-y;
+}
+
+#bookHost {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: center;
+  transition: transform .12s;
+}
+
+#flipBook {
+  margin: auto;
+}
+
+.pdf-page {
+  background: #fff;
+  overflow: hidden;
+}
+
+.pdf-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.reader-bottom {
+  padding: 10px 0 7px;
+}
+
+.reader-progress {
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.15);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.reader-progress div {
+  height: 100%;
+  background: #bd91ff;
+  width: 0;
+}
+
+.reader-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-label {
+  color: #d2c5e1;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.page-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.page-nav button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 11px;
+  background: #21172f;
+  color: white;
+}
+
+.reader-message {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  text-align: center;
+  color: #e9dafa;
+  background: #100b19;
+  line-height: 1.7;
+}
+
+.reader-message.show { display: flex; }
+
+.toast {
+  position: fixed;
+  z-index: 300;
+  bottom: calc(25px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 13px 18px;
+  background: #30213f;
+  border: 1px solid rgba(255,255,255,.14);
+  color: white;
+  border-radius: 13px;
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  display: none;
+  text-align: center;
+}
+
+.toast.show { display: block; }
+
+.loading {
+  position: fixed;
+  z-index: 400;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 15px;
+  background: rgba(16,11,25,.94);
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+.loading.show { display: flex; }
+
+.spinner {
+  width: 37px;
+  height: 37px;
+  border: 3px solid rgba(255,255,255,.2);
+  border-top-color: #bd91ff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+input[type=file] { display: none; }
+
+@media (max-width:600px) {
+  .app { padding: 16px 14px 35px; }
+  header { margin-bottom: 20px; }
+  .brand h1 { font-size: 18px; }
+  .brand p { font-size: 10px; }
+  .logo { width: 42px; height: 42px; }
+  .hero { padding: 23px 20px; border-radius: 20px; }
+  .hero h2 { font-size: 30px; }
+  .stats { gap: 8px; }
+  .stat { padding: 13px 10px; }
+  .stat strong { font-size: 21px; }
+  .stat span { font-size: 10px; }
+  .library { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+  .book-card { padding: 9px; }
+  .section-heading { align-items: stretch; flex-direction: column; }
+  .search { width: 100%; }
+  .reader { padding-left: 6px; padding-right: 6px; }
+  .reader-top { min-height: 47px; }
+  .reader-title { max-width: 44vw; font-size: 11px; }
+  .reader-tools { gap: 5px; }
+  .reader-tools button, .reader-top button {
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  .reader-stage { padding: 0; }
+  .reader-bottom-row { gap: 6px; }
+  .page-nav button { min-height: 38px; padding: 0 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
 </head>
 
 <body>
-  <div class="app">
-    <header>
-      <div class="brand">
-        <div class="brand-icon">✦</div>
-        <div>
-          <h1>Mi biblioteca</h1>
-          <p>Tus libros, tu espacio.</p>
-        </div>
-      </div>
-      <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema" title="Cambiar tema">☼</button>
-    </header>
-
-    <section class="welcome">
-      <h2>Un mundo entre páginas.</h2>
-      <p>Guardá tus libros PDF y retomá la lectura donde la dejaste, con una experiencia de lectura estilo libro.</p>
-      <button class="primary-btn" id="importBtn">＋ Agregar un PDF</button>
-      <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
-    </section>
-
-    <div class="section-heading">
-      <h2>Mi colección</h2>
-      <span class="count" id="bookCount">0 libros</span>
-    </div>
-
-    <div class="search-row">
-      <input class="search" id="searchInput" type="search" placeholder="Buscar un libro..." aria-label="Buscar libros">
-      <button class="filter-btn" id="filterBtn">Todos</button>
-    </div>
-
-    <main class="library" id="library">
-      <div class="empty">
-        <div class="empty-icon">📚</div>
-        Todavía no hay libros.<br>Agregá tu primer PDF para comenzar.
-      </div>
-    </main>
-
-    <p class="note">
-      Tus libros se guardan en este navegador. Si borrás los datos del sitio, cambiás de navegador o de dispositivo, podrías perderlos. Conservá también una copia de tus PDF originales.
-    </p>
-  </div>
-
-  <section id="reader" aria-label="Lector de libros PDF" aria-hidden="true">
-    <div class="reader-top">
-      <div class="reader-title">
-        <strong id="readerTitle">Mi libro</strong>
-        <span id="readerSubtitle">Preparando lectura...</span>
-      </div>
-
-      <div class="reader-actions">
-        <button id="bookmarkBtn" title="Guardar marcador" aria-label="Guardar marcador">☆</button>
-        <button id="immersiveBtn" title="Ocultar controles" aria-label="Ocultar controles">⛶</button>
-        <button id="closeReaderBtn" title="Cerrar libro" aria-label="Cerrar libro">✕</button>
+<div class="app" id="app">
+  <header>
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div>
+        <h1>Mi biblioteca</h1>
+        <p>TU ESPACIO DE LECTURA</p>
       </div>
     </div>
-
-    <div id="bookStage">
-      <div id="flipbook"></div>
-      <button class="float-exit" id="exitImmersiveBtn" aria-label="Mostrar controles" title="Mostrar controles">↙</button>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeButton" title="Cambiar tema" aria-label="Cambiar tema">☼</button>
+      <button class="icon-btn" id="importTop" title="Importar PDF" aria-label="Importar PDF">＋</button>
     </div>
+  </header>
 
-    <div class="reader-bottom">
-      <button id="prevBtn" aria-label="Página anterior" title="Página anterior">‹</button>
-      <div id="pageInfo">Página 1 / 1</div>
-
-      <div class="zoom-controls">
-        <button id="zoomOutBtn" aria-label="Alejar" title="Alejar">−</button>
-        <span id="zoomLabel">100%</span>
-        <button id="zoomInBtn" aria-label="Acercar" title="Acercar">＋</button>
-        <button id="zoomResetBtn" aria-label="Restablecer zoom" title="Restablecer zoom">↺</button>
-      </div>
-
-      <button id="nextBtn" aria-label="Página siguiente" title="Página siguiente">›</button>
+  <section class="hero">
+    <div class="eyebrow">Tu rincón literario</div>
+    <h2>Un mundo entero<br>entre páginas.</h2>
+    <p>Guardá tus libros en PDF, retomá donde te quedaste y disfrutá de la lectura con un efecto de páginas que pasan.</p>
+    <div class="hero-actions">
+      <button class="primary-btn" id="importHero">＋ Añadir un libro</button>
+      <button class="secondary-btn" id="continueButton">Continuar leyendo →</button>
     </div>
   </section>
 
-  <div class="toast" id="toast" hidden></div>
+  <section class="stats">
+    <div class="stat"><strong id="totalBooks">0</strong><span>Libros guardados</span></div>
+    <div class="stat"><strong id="totalPages">0</strong><span>Páginas en tu biblioteca</span></div>
+    <div class="stat"><strong id="finishedBooks">0</strong><span>Libros terminados</span></div>
+  </section>
 
-  <script>
-  (() => {
-    "use strict";
+  <div class="section-heading">
+    <h2>Mi colección</h2>
+    <input id="searchInput" class="search" type="search" placeholder="Buscar un libro..." autocomplete="off">
+  </div>
 
-    const $ = id => document.getElementById(id);
+  <div class="filters">
+    <button class="filter active" data-filter="all">Todos</button>
+    <button class="filter" data-filter="reading">En lectura</button>
+    <button class="filter" data-filter="finished">Terminados</button>
+  </div>
 
-    const DB_NAME = "mi-biblioteca-db";
-    const STORE_NAME = "books";
+  <section class="library" id="library">
+    <div class="empty"><div class="empty-icon">📚</div><h3>Preparando tu biblioteca...</h3></div>
+  </section>
 
-    let db = null;
-    let books = [];
-    let showFinishedOnly = false;
-    let activeBook = null;
-    let pdfDocument = null;
-    let pageFlip = null;
-    let immersive = false;
-    let zoom = 1;
-    let panX = 0;
-    let panY = 0;
-    let pinchStartDistance = 0;
-    let pinchStartZoom = 1;
-    let pointerStart = null;
-    let renderingPages = new Map();
-    let toastTimeout = null;
-    let renderToken = 0;
-    let closingReader = false;
+  <footer>Hecho para tus momentos de lectura ✦</footer>
+</div>
 
-    if (
-  !window.pdfjsLib ||
-  !(window.PageFlip || (window.St && window.St.PageFlip))
-) {
+<input id="pdfInput" type="file" accept=".pdf,application/pdf">
 
-    function notify(message, duration = 2800) {
-      const el = $("toast");
-      el.textContent = message;
-      el.hidden = false;
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        el.hidden = true;
-      }, duration);
-    }
+<div class="reader" id="reader" aria-hidden="true">
+  <div class="reader-top">
+    <button id="closeReader" aria-label="Cerrar lector" title="Volver a la biblioteca">←</button>
+    <div class="reader-title" id="readerTitle">Mi libro</div>
+    <div class="reader-tools">
+      <button id="bookmarkButton" title="Guardar marcador" aria-label="Guardar marcador">♡</button>
+      <button id="zoomOut" title="Alejar">−</button>
+      <button id="zoomIn" title="Acercar">＋</button>
+      <button id="fullscreenButton" title="Pantalla completa">⛶</button>
+    </div>
+  </div>
 
-    function makeId() {
-      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-      return "book-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-    }
+  <div class="reader-stage" id="readerStage">
+    <div id="bookHost">
+      <div id="flipBook"></div>
+    </div>
+    <div class="reader-message" id="readerMessage">
+      <div>
+        <h3>No se pudo abrir el libro</h3>
+        <p id="readerMessageText">Comprobá tu conexión e intentá nuevamente.</p>
+        <button class="secondary-btn" id="retryButton">Volver a intentar</button>
+      </div>
+    </div>
+  </div>
 
-    function openDatabase() {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
+  <div class="reader-bottom">
+    <div class="reader-progress"><div id="readerProgressFill"></div></div>
+    <div class="reader-bottom-row">
+      <span class="page-label" id="pageLabel">Página 0 de 0</span>
+      <div class="page-nav">
+        <button id="previousPage">← Anterior</button>
+        <button id="nextPage">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        request.onupgradeneeded = () => {
-          const database = request.result;
-          if (!database.objectStoreNames.contains(STORE_NAME)) {
-            database.createObjectStore(STORE_NAME, { keyPath: "id" });
-          }
-        };
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <strong id="loadingTitle">Preparando tu libro...</strong>
+  <span id="loadingText">Esto puede tardar unos segundos.</span>
+</div>
+<div class="toast" id="toast" role="status"></div>
 
-        request.onsuccess = () => {
-          db = request.result;
-          db.onversionchange = () => db.close();
-          resolve(db);
-        };
+<script>
+(() => {
+  "use strict";
 
-        request.onerror = () => reject(request.error);
-      });
-    }
+  const DB_NAME = "mi-biblioteca-db";
+  const STORE_NAME = "books";
+  const DB_VERSION = 1;
 
-    function getAllBooks() {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readonly");
-        const request = transaction.objectStore(STORE_NAME).getAll();
-        request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error);
-      });
-    }
+  const $ = id => document.getElementById(id);
 
-    function saveBook(book) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readwrite");
-        transaction.objectStore(STORE_NAME).put(book);
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
-        transaction.onabort = () => reject(transaction.error || new Error("No se pudo guardar"));
-      });
-    }
+  const els = {
+    library: $("library"),
+    pdfInput: $("pdfInput"),
+    importTop: $("importTop"),
+    importHero: $("importHero"),
+    continueButton: $("continueButton"),
+    themeButton: $("themeButton"),
+    searchInput: $("searchInput"),
+    totalBooks: $("totalBooks"),
+    totalPages: $("totalPages"),
+    finishedBooks: $("finishedBooks"),
+    reader: $("reader"),
+    readerTitle: $("readerTitle"),
+    readerStage: $("readerStage"),
+    bookHost: $("bookHost"),
+    flipBook: $("flipBook"),
+    pageLabel: $("pageLabel"),
+    progressFill: $("readerProgressFill"),
+    loading: $("loading"),
+    loadingTitle: $("loadingTitle"),
+    loadingText: $("loadingText"),
+    toast: $("toast"),
+    readerMessage: $("readerMessage"),
+    readerMessageText: $("readerMessageText"),
+    bookmarkButton: $("bookmarkButton")
+  };
 
-    function deleteBookFromDB(id) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readwrite");
-        transaction.objectStore(STORE_NAME).delete(id);
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
-      });
-    }
+  let db = null;
+  let books = [];
+  let currentBook = null;
+  let pdfDocument = null;
+  let pageFlip = null;
+  let currentFilter = "all";
+  let zoomLevel = 1;
+  let toastTimer = null;
+  let renderGeneration = 0;
+  let closingReader = false;
 
-    function normalizeBook(book) {
-      const legacy = !book.title && !!book.name;
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
 
-      return {
-        ...book,
-        id: book.id ?? makeId(),
-        title: book.title || book.name || book.filename || "Libro sin título",
-        filename: book.filename || book.title || book.name || "libro.pdf",
-        currentPage: Math.max(
-          0,
-          Number(book.currentPage || 0) -
-          (legacy && Number(book.currentPage) > 0 ? 1 : 0)
-        ),
-        bookmarks: Array.isArray(book.bookmarks)
-          ? book.bookmarks
-          : Array.isArray(book.marks)
-            ? book.marks.map(n => Math.max(0, Number(n) - (legacy ? 1 : 0)))
-            : [],
-        finished: !!book.finished,
-        totalPages: Number(book.totalPages || 0)
+  function showToast(message, duration = 2800) {
+    els.toast.textContent = message;
+    els.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      els.toast.classList.remove("show");
+    }, duration);
+  }
+
+  function showLoading(title, detail = "") {
+    els.loadingTitle.textContent = title;
+    els.loadingText.textContent = detail;
+    els.loading.classList.add("show");
+  }
+
+  function hideLoading() {
+    els.loading.classList.remove("show");
+  }
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onupgradeneeded = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(STORE_NAME)) {
+          database.createObjectStore(STORE_NAME, { keyPath: "id" });
+        }
       };
+
+      request.onsuccess = () => {
+        db = request.result;
+        db.onversionchange = () => db.close();
+        resolve(db);
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function getAllBooks() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const request = tx.objectStore(STORE_NAME).getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function saveBook(book) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).put(book);
+      tx.oncomplete = () => resolve(book);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error("No se pudo guardar"));
+    });
+  }
+
+  function deleteBookFromDB(id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  function normalizeBook(book) {
+    if (!book || !book.id) return null;
+
+    if (!Array.isArray(book.bookmarks)) book.bookmarks = [];
+    if (!Number.isFinite(book.currentPage)) book.currentPage = 0;
+    if (!Number.isFinite(book.totalPages)) book.totalPages = 0;
+    if (typeof book.finished !== "boolean") book.finished = false;
+    if (!book.title) book.title = book.filename || "Libro sin título";
+
+    return book;
+  }
+
+  async function refreshLibrary() {
+    try {
+      books = (await getAllBooks()).map(normalizeBook).filter(Boolean);
+      renderLibrary();
+      updateStats();
+    } catch (error) {
+      console.error(error);
+      showToast("No se pudo cargar la biblioteca.");
+    }
+  }
+
+  function updateStats() {
+    els.totalBooks.textContent = books.length;
+    els.totalPages.textContent = books.reduce((sum, book) => sum + (book.totalPages || 0), 0);
+    els.finishedBooks.textContent = books.filter(book => book.finished).length;
+  }
+
+  function formatDate(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("es-PY", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function renderLibrary() {
+    const query = els.searchInput.value.trim().toLocaleLowerCase("es");
+    let filtered = books.filter(book =>
+      (book.title || "").toLocaleLowerCase("es").includes(query)
+    );
+
+    if (currentFilter === "reading") {
+      filtered = filtered.filter(book => !book.finished);
+    } else if (currentFilter === "finished") {
+      filtered = filtered.filter(book => book.finished);
     }
 
-    async function refreshBooks() {
-      try {
-        books = (await getAllBooks()).map(normalizeBook);
-        renderLibrary();
-      } catch (error) {
-        console.error(error);
-        notify("No se pudo cargar la biblioteca.");
+    filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (!filtered.length) {
+      const hasBooks = books.length > 0;
+      els.library.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">${hasBooks ? "🔎" : "📚"}</div>
+          <h3>${hasBooks ? "No encontramos ese libro" : "Tu biblioteca está vacía"}</h3>
+          <p>${hasBooks ? "Probá con otro título o filtro." : "Importá tu primer PDF para comenzar a leer."}</p>
+        </div>`;
+      return;
+    }
+
+    els.library.innerHTML = filtered.map(book => {
+      const total = Math.max(0, book.totalPages || 0);
+      const page = Math.max(0, Math.min(book.currentPage || 0, Math.max(total - 1, 0)));
+      const percent = total ? Math.round(((page + 1) / total) * 100) : 0;
+      const safeTitle = escapeHTML(book.title);
+      const safeId = escapeHTML(String(book.id));
+
+      return `
+        <article class="book-card">
+          <div class="cover">
+            <div class="cover-icon">📖</div>
+            <div class="cover-label">Mi biblioteca</div>
+          </div>
+          <div class="book-title">${safeTitle}</div>
+          <div class="book-meta">${total ? total + " páginas" : "PDF"} · ${book.finished ? "Terminado" : "En lectura"}</div>
+          <div class="progress"><div style="width:${book.finished ? 100 : percent}%"></div></div>
+          <div class="book-meta">${book.finished ? "¡Libro completado!" : total ? "Página " + (page + 1) + " de " + total : "Listo para abrir"}</div>
+          <div class="card-actions" style="margin-top:10px">
+            <button class="open-card" data-action="open" data-id="${safeId}">Leer</button>
+            <button data-action="delete" data-id="${safeId}" aria-label="Eliminar ${safeTitle}">Eliminar</button>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
+  function openFilePicker() {
+    els.pdfInput.value = "";
+    els.pdfInput.click();
+  }
+
+  async function importPDF(file) {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".pdf") &&
+        file.type !== "application/pdf") {
+      showToast("Elegí un archivo PDF.");
+      return;
+    }
+
+    if (!window.pdfjsLib) {
+      showToast("No se pudo cargar el lector PDF. Revisá tu conexión.");
+      return;
+    }
+
+    showLoading("Importando tu libro...", "Leyendo el archivo PDF.");
+
+    try {
+      const data = await file.arrayBuffer();
+
+      // Comprobamos el PDF antes de guardarlo.
+      const testDocument = await pdfjsLib.getDocument({
+        data: data.slice(0)
+      }).promise;
+
+      const totalPages = testDocument.numPages;
+      await testDocument.destroy();
+
+      const id = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "book-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+
+      const book = {
+        id,
+        title: file.name.replace(/\.pdf$/i, ""),
+        filename: file.name,
+        data,
+        totalPages,
+        currentPage: 0,
+        finished: false,
+        bookmarks: [],
+        createdAt: Date.now()
+      };
+
+      await saveBook(book);
+      await refreshLibrary();
+      hideLoading();
+      showToast("¡Libro añadido a tu biblioteca!");
+    } catch (error) {
+      console.error("Error importando PDF:", error);
+      hideLoading();
+
+      let message = "No se pudo importar el PDF. Puede estar dañado o protegido.";
+      if (!navigator.onLine) {
+        message = "Estás sin conexión. Conectate a internet e intentá de nuevo.";
+      } else if (error && /password/i.test(error.message || "")) {
+        message = "Este PDF está protegido con contraseña.";
       }
+
+      showToast(message, 4500);
+    }
+  }
+
+  function getFlipBookConstructor() {
+    return window.St?.PageFlip || window.PageFlip || null;
+  }
+
+  async function openBook(id) {
+    const book = books.find(item => String(item.id) === String(id));
+    if (!book) {
+      showToast("No encontramos ese libro.");
+      return;
     }
 
-    function renderLibrary() {
-      const library = $("library");
-      const query = $("searchInput").value.trim().toLowerCase();
+    const FlipBook = getFlipBookConstructor();
 
-      const filtered = books.filter(book => {
-        const matchesSearch = book.title.toLowerCase().includes(query);
-        const matchesFinished = !showFinishedOnly || book.finished;
-        return matchesSearch && matchesFinished;
+    if (!window.pdfjsLib || !FlipBook) {
+      showToast("No se cargaron las herramientas del lector. Revisá tu conexión e intentá recargar la página.", 5000);
+      return;
+    }
+
+    if (!book.data) {
+      showToast("Este libro no contiene los datos del PDF. Volvé a importarlo.");
+      return;
+    }
+
+    showLoading("Abriendo tu libro...", "Preparando las páginas.");
+    currentBook = book;
+    renderGeneration++;
+
+    try {
+      if (pdfDocument) {
+        await pdfDocument.destroy().catch(() => {});
+        pdfDocument = null;
+      }
+
+      const rawData = book.data instanceof ArrayBuffer
+        ? book.data.slice(0)
+        : await book.data.arrayBuffer();
+
+      pdfDocument = await pdfjsLib.getDocument({ data: rawData }).promise;
+
+      const total = pdfDocument.numPages;
+      book.totalPages = total;
+      book.currentPage = Math.max(0, Math.min(book.currentPage || 0, total - 1));
+
+      if (!Array.isArray(book.bookmarks)) book.bookmarks = [];
+
+      els.readerTitle.textContent = book.title;
+      els.reader.classList.add("active");
+      els.reader.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      els.readerMessage.classList.remove("show");
+
+      els.flipBook.innerHTML = "";
+      els.bookHost.style.transform = "scale(1)";
+      zoomLevel = 1;
+
+      const firstPage = await pdfDocument.getPage(1);
+      const baseViewport = firstPage.getViewport({ scale: 1 });
+
+      const isMobile = window.innerWidth < 700;
+      const availableWidth = Math.max(250, Math.min(window.innerWidth - 24, isMobile ? 520 : 900));
+      const availableHeight = Math.max(300, window.innerHeight - (isMobile ? 145 : 165));
+
+      let pageWidth = Math.min(availableWidth / (isMobile ? 1 : 2), availableHeight * baseViewport.width / baseViewport.height);
+      let pageHeight = pageWidth * baseViewport.height / baseViewport.width;
+
+      pageWidth = Math.max(220, Math.floor(pageWidth));
+      pageHeight = Math.floor(pageWidth * baseViewport.height / baseViewport.width);
+
+      // En móviles, limitamos el tamaño para que entre la página completa.
+      if (pageHeight > availableHeight) {
+        pageHeight = Math.floor(availableHeight);
+        pageWidth = Math.floor(pageHeight * baseViewport.width / baseViewport.height);
+      }
+
+      const pages = [];
+
+      for (let pageNumber = 1; pageNumber <= total; pageNumber++) {
+        const pageElement = document.createElement("div");
+        pageElement.className = "pdf-page";
+        pageElement.style.width = pageWidth + "px";
+        pageElement.style.height = pageHeight + "px";
+
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("aria-label", "Página " + pageNumber);
+        pageElement.appendChild(canvas);
+        pages.push(pageElement);
+      }
+
+      els.flipBook.style.width = (isMobile ? pageWidth : pageWidth * 2) + "px";
+      els.flipBook.style.height = pageHeight + "px";
+
+      pageFlip = new FlipBook(els.flipBook, {
+        width: pageWidth,
+        height: pageHeight,
+        size: "fixed",
+        minWidth: 220,
+        maxWidth: 1200,
+        minHeight: 300,
+        maxHeight: 1800,
+        showCover: total > 1,
+        usePortrait: true,
+        startPage: Math.min(book.currentPage, total - 1),
+        drawShadow: true,
+        flippingTime: 650,
+        useMouseEvents: true,
+        mobileScrollSupport: true,
+        maxShadowOpacity: 0.35,
+        autoSize: false,
+        clickEventForward: true,
+        swipeDistance: 30,
+        showPageCorners: true
       });
 
-      $("bookCount").textContent =
-        `${books.length} ${books.length === 1 ? "libro" : "libros"}`;
+      pageFlip.loadFromHTML(pages);
 
-      $("filterBtn").textContent = showFinishedOnly ? "Terminados ✓" : "Todos";
-      $("filterBtn").classList.toggle("active", showFinishedOnly);
+      const generation = renderGeneration;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
 
-      library.innerHTML = "";
+      // Renderiza las páginas en alta resolución para mejorar la nitidez.
+      for (let index = 0; index < total; index++) {
+        if (generation !== renderGeneration) return;
 
-      if (!filtered.length) {
-        const empty = document.createElement("div");
-        empty.className = "empty";
-        empty.innerHTML = `
-          <div class="empty-icon">${query ? "🔎" : "📚"}</div>
-          ${query ? "No encontré libros con ese nombre." :
-            showFinishedOnly ? "Todavía no marcaste libros como terminados." :
-            "Todavía no hay libros.<br>Agregá tu primer PDF para comenzar."}
-        `;
-        library.appendChild(empty);
-        return;
-      }
+        const page = await pdfDocument.getPage(index + 1);
+        const viewport = page.getViewport({
+          scale: (pageWidth / page.getViewport({ scale: 1 }).width) * pixelRatio
+        });
 
-      filtered.forEach(book => {
-        const card = document.createElement("article");
-        card.className = "book-card";
+        const canvas = pages[index].querySelector("canvas");
+        const context = canvas.getContext("2d", { alpha: false });
 
-        const cover = document.createElement("div");
-        cover.className = "book-cover";
-        cover.textContent = "📖";
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
 
-        const title = document.createElement("h3");
-        title.textContent = book.title;
-
-        const page = Math.min(
-          Math.max(0, Number(book.currentPage || 0)),
-          Math.max(0, Number(book.totalPages || 1) - 1)
-        );
-
-        const meta = document.createElement("div");
-        meta.className = "book-meta";
-        meta.textContent = book.finished
-          ? "✓ Lectura terminada"
-          : `Página ${page + 1}${book.totalPages ? " de " + book.totalPages : ""}`;
-
-        const progress = document.createElement("div");
-        progress.className = "progress";
-
-        const bar = document.createElement("div");
-        const percentage = book.finished
-          ? 100
-          : book.totalPages > 0
-            ? Math.min(100, ((page + 1) / book.totalPages) * 100)
-            : 0;
-
-        bar.style.width = percentage + "%";
-        progress.appendChild(bar);
-
-        const actions = document.createElement("div");
-        actions.className = "card-actions";
-
-        const read = document.createElement("button");
-        read.className = "read-btn";
-        read.textContent = "Leer";
-        read.addEventListener("click", () => openBook(book.id));
-
-        const remove = document.createElement("button");
-        remove.textContent = "Eliminar";
-        remove.addEventListener("click", () => removeBook(book.id));
-
-        actions.append(read, remove);
-        card.append(cover, title, meta, progress, actions);
-        library.appendChild(card);
-      });
-    }
-
-    async function importPDF(file) {
-      if (!file) return;
-
-      if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
-        notify("Elegí un archivo PDF.");
-        return;
-      }
-
-    if (
-  !window.pdfjsLib ||
-  !(window.PageFlip || (window.St && window.St.PageFlip))
-) {
-
-      const button = $("importBtn");
-      button.disabled = true;
-      button.textContent = "Preparando PDF...";
-
-      try {
-        const buffer = await file.arrayBuffer();
-
-        const validation = await pdfjsLib.getDocument({
-          data: buffer.slice(0)
+        await page.render({
+          canvasContext: context,
+          viewport,
+          background: "#ffffff"
         }).promise;
 
-        const book = {
-          id: makeId(),
-          title: file.name.replace(/\.pdf$/i, ""),
-          filename: file.name,
-          data: buffer,
-          totalPages: validation.numPages,
-          currentPage: 0,
-          finished: false,
-          bookmarks: [],
-          createdAt: Date.now()
-        };
-
-        await validation.destroy();
-        await saveBook(book);
-        await refreshBooks();
-
-        notify("¡Libro agregado a tu biblioteca!");
-        $("searchInput").value = "";
-      } catch (error) {
-        console.error(error);
-        notify("No pude abrir ese PDF. Probá con otro archivo.");
-      } finally {
-        button.disabled = false;
-        button.textContent = "＋ Agregar un PDF";
-        $("fileInput").value = "";
-      }
-    }
-
-    async function removeBook(id) {
-      const book = books.find(item => item.id === id);
-      if (!book) return;
-
-      if (!confirm(`¿Eliminar "${book.title}" de tu biblioteca?`)) return;
-
-      try {
-        await deleteBookFromDB(id);
-        await refreshBooks();
-        notify("Libro eliminado.");
-      } catch (error) {
-        console.error(error);
-        notify("No se pudo eliminar el libro.");
-      }
-    }
-
-    function clearFlipbook() {
-      renderToken++;
-
-      renderingPages.forEach(task => {
-        try {
-          if (task && typeof task.cancel === "function") task.cancel();
-        } catch (_) {}
-      });
-
-      renderingPages.clear();
-
-      if (pageFlip) {
-        try {
-          pageFlip.destroy();
-        } catch (error) {
-          console.warn("No se pudo cerrar la animación anterior:", error);
+        if (index % 5 === 0 || index === total - 1) {
+          els.loadingText.textContent = "Preparando página " + (index + 1) + " de " + total + "...";
         }
-        pageFlip = null;
       }
 
-      $("flipbook").innerHTML = "";
-    }
+      if (generation !== renderGeneration) return;
 
-    function createPageElements(total) {
-      const container = $("flipbook");
-      const fragment = document.createDocumentFragment();
-
-      for (let i = 0; i < total; i++) {
-        const page = document.createElement("div");
-        page.className = "page";
-        page.dataset.pageIndex = String(i);
-
-        const content = document.createElement("div");
-        content.className = "page-content";
-
-        const loading = document.createElement("div");
-        loading.className = "page-loading";
-        loading.textContent = "Cargando página…";
-
-        const number = document.createElement("div");
-        number.className = "page-number";
-        number.textContent = String(i + 1);
-
-        content.append(loading, number);
-        page.appendChild(content);
-        fragment.appendChild(page);
-      }
-
-      container.appendChild(fragment);
-    }
-
-    function getPageContent(index) {
-      return $("flipbook").querySelector(
-        `.page[data-page-index="${index}"] .page-content`
-      );
-    }
-
-    async function renderPage(index, token = renderToken) {
-      if (!pdfDocument || index < 0 || index >= pdfDocument.numPages) return;
-      if (token !== renderToken) return;
-
-      const content = getPageContent(index);
-      if (!content || content.querySelector("canvas")) return;
-      if (renderingPages.has(index)) return renderingPages.get(index);
-
-      const taskPromise = (async () => {
-        let renderTask = null;
-
-        try {
-          const page = await pdfDocument.getPage(index + 1);
-          if (token !== renderToken) return;
-
-          const box = content.getBoundingClientRect();
-          const availableWidth = Math.max(180, box.width - 20);
-          const availableHeight = Math.max(220, box.height - 20);
-
-          const baseViewport = page.getViewport({ scale: 1 });
-          const fitScale = Math.min(
-            availableWidth / baseViewport.width,
-            availableHeight / baseViewport.height
-          );
-
-          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2.25);
-          const viewport = page.getViewport({ scale: fitScale * pixelRatio });
-
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d", { alpha: false });
-
-          if (!context) throw new Error("No se pudo preparar la página.");
-
-          canvas.width = Math.ceil(viewport.width);
-          canvas.height = Math.ceil(viewport.height);
-          canvas.style.width = `${baseViewport.width * fitScale}px`;
-          canvas.style.height = `${baseViewport.height * fitScale}px`;
-
-          const loading = content.querySelector(".page-loading");
-          if (loading) loading.remove();
-
-          content.insertBefore(canvas, content.querySelector(".page-number"));
-
-          renderTask = page.render({
-            canvasContext: context,
-            viewport,
-            background: "#ffffff"
-          });
-
-          renderingPages.set(index, renderTask);
-          await renderTask.promise;
-
-          if (token !== renderToken) {
-            canvas.remove();
-            return;
-          }
-
-          applyZoomToCanvas(canvas, index);
-        } catch (error) {
-          if (error && error.name !== "RenderingCancelledException") {
-            console.warn("Error al renderizar la página", index + 1, error);
-
-            const currentContent = getPageContent(index);
-            if (currentContent && !currentContent.querySelector("canvas")) {
-              const loading = currentContent.querySelector(".page-loading");
-              if (loading) loading.textContent = "No se pudo mostrar esta página.";
-            }
-          }
-        } finally {
-          if (renderingPages.get(index) === renderTask ||
-              renderingPages.get(index) === taskPromise) {
-            renderingPages.delete(index);
-          }
-        }
-      })();
-
-      renderingPages.set(index, taskPromise);
-      return taskPromise;
-    }
-
-    async function renderNearbyPages(center) {
-      if (!pdfDocument || !pageFlip) return;
-
-      const token = renderToken;
-      const candidates = [center, center + 1, center - 1, center + 2, center - 2]
-        .filter(index => index >= 0 && index < pdfDocument.numPages);
-
-      for (const index of candidates) {
-        if (token !== renderToken) return;
-        await renderPage(index, token);
-      }
-
-      const keep = new Set(
-        Array.from({ length: pdfDocument.numPages }, (_, i) => i)
-          .filter(i => Math.abs(i - center) <= 3)
-      );
-
-      $("flipbook").querySelectorAll(".page").forEach(page => {
-        const index = Number(page.dataset.pageIndex);
-        if (keep.has(index)) return;
-
-        const canvas = page.querySelector("canvas");
-        if (canvas) {
-          canvas.width = 1;
-          canvas.height = 1;
-          canvas.remove();
-        }
-
-        const content = page.querySelector(".page-content");
-        if (content && !content.querySelector(".page-loading")) {
-          const loading = document.createElement("div");
-          loading.className = "page-loading";
-          loading.textContent = "Pasá la página para cargarla";
-          content.insertBefore(loading, content.querySelector(".page-number"));
-        }
-      });
-    }
-
-    function applyZoomToCanvas(canvas, index) {
-      if (!canvas) return;
-
-      const currentIndex = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
-      const visible = index === currentIndex ||
-        (pageFlip && index === currentIndex + 1);
-
-      canvas.style.transform = visible
-        ? `translate(${panX}px, ${panY}px) scale(${zoom})`
-        : "none";
-    }
-
-    function updateZoom() {
-      $("zoomLabel").textContent = Math.round(zoom * 100) + "%";
-
-      $("flipbook").querySelectorAll("canvas").forEach(canvas => {
-        const pageElement = canvas.closest(".page");
-        const index = Number(pageElement?.dataset.pageIndex);
-        applyZoomToCanvas(canvas, index);
-      });
-
-      $("bookStage").style.touchAction = zoom > 1 ? "none" : "pan-y";
-    }
-
-    function setZoom(value, resetPan = false) {
-      zoom = Math.min(3, Math.max(1, value));
-
-      if (resetPan || zoom === 1) {
-        panX = 0;
-        panY = 0;
-      }
-
-      updateZoom();
-    }
-
-    function updatePageInfo(index) {
-      if (!activeBook) return;
-
-      const total = pdfDocument ? pdfDocument.numPages : activeBook.totalPages;
-      const safeIndex = Math.max(0, Math.min(index, Math.max(0, total - 1)));
-
-      $("pageInfo").textContent = `Página ${safeIndex + 1} / ${total}`;
-      $("readerSubtitle").textContent =
-        `${Math.round((safeIndex + 1) / Math.max(total, 1) * 100)}% leído`;
-
-      $("prevBtn").disabled = safeIndex <= 0;
-      $("nextBtn").disabled = safeIndex >= total - 1;
-
-      const marks = activeBook.bookmarks || [];
-      $("bookmarkBtn").textContent = marks.includes(safeIndex) ? "★" : "☆";
-    }
-
-    async function saveProgress(index) {
-      if (!activeBook || !db) return;
-
-      const total = pdfDocument ? pdfDocument.numPages : activeBook.totalPages;
-
-      activeBook.currentPage = index;
-      activeBook.totalPages = total;
-      activeBook.finished = total > 0 && index >= total - 1;
-
-      try {
-        await saveBook(activeBook);
-
-        const position = books.findIndex(book => book.id === activeBook.id);
-        if (position >= 0) books[position] = normalizeBook(activeBook);
-
-        renderLibrary();
-      } catch (error) {
-        console.warn("No se pudo guardar el progreso:", error);
-      }
-    }
-
-    async function openBook(id) {
-      const book = books.find(item => item.id === id);
-
-      if (!book) {
-        notify("No encontré ese libro.");
-        return;
-      }
-
-      if (!window.pdfjsLib || !window.PageFlip) {
-        notify("No se cargó el lector. Revisá tu conexión a internet.");
-        return;
-      }
-
-      await closeReader(false);
-
-      activeBook = { ...book };
-      zoom = 1;
-      panX = 0;
-      panY = 0;
-      immersive = false;
-
-      $("reader").classList.add("open");
-      $("reader").classList.remove("immersive");
-      $("readerTitle").textContent = activeBook.title;
-      $("readerSubtitle").textContent = "Preparando libro...";
-      $("reader").setAttribute("aria-hidden", "false");
-
-      document.body.style.overflow = "hidden";
-
-      try {
-        const rawData = activeBook.data;
-        if (!rawData) throw new Error("El archivo PDF no está disponible.");
-
-        const data = rawData instanceof ArrayBuffer
-          ? rawData.slice(0)
-          : rawData.buffer
-            ? rawData.buffer.slice(
-                rawData.byteOffset || 0,
-                (rawData.byteOffset || 0) + rawData.byteLength
-              )
-            : rawData;
-
-        pdfDocument = await pdfjsLib.getDocument({ data }).promise;
-        activeBook.totalPages = pdfDocument.numPages;
-
-        clearFlipbook();
-        createPageElements(pdfDocument.numPages);
-
-        const startPage = Math.min(
-          Math.max(0, Number(activeBook.currentPage || 0)),
-          pdfDocument.numPages - 1
-        );
-
-      pageFlip = new (window.PageFlip || window.St.PageFlip)($("flipbook"), {
-          width: 420,
-          height: 620,
-          size: "stretch",
-          minWidth: 220,
-          maxWidth: 1000,
-          minHeight: 300,
-          maxHeight: 1400,
-          drawShadow: true,
-          flippingTime: 650,
-          usePortrait: true,
-          startPage,
-          autoSize: true,
-          maxShadowOpacity: 0.45,
-          showCover: true,
-          mobileScrollSupport: false,
-          swipeDistance: 25,
-          clickEventForward: true,
-          useMouseEvents: true
-        });
-
-        pageFlip.loadFromHTML($("flipbook").querySelectorAll(".page"));
-
+      if (typeof pageFlip.on === "function") {
         pageFlip.on("flip", event => {
-          const index = typeof event.data === "number"
-            ? event.data
-            : pageFlip.getCurrentPageIndex();
-
-          updatePageInfo(index);
-          setZoom(1, true);
-          renderNearbyPages(index);
-          saveProgress(index);
+          if (!currentBook || closingReader) return;
+          currentBook.currentPage = Number(event.data) || 0;
+          updateReaderStatus();
+          saveBook(currentBook).catch(console.error);
         });
-
-        updatePageInfo(startPage);
-        await renderNearbyPages(startPage);
-        await saveProgress(startPage);
-
-        $("readerSubtitle").textContent = `${pdfDocument.numPages} páginas`;
-        updateZoom();
-      } catch (error) {
-        console.error(error);
-        notify("No se pudo abrir el PDF. Si es muy grande, probá una versión más liviana.", 4000);
-        await closeReader();
-      }
-    }
-
-    async function closeReader(refresh = true) {
-      if (closingReader) return;
-      closingReader = true;
-
-      try {
-        immersive = false;
-        $("reader").classList.remove("open", "immersive");
-        $("reader").setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-
-        clearFlipbook();
-
-        if (pdfDocument) {
-          const oldDocument = pdfDocument;
-          pdfDocument = null;
-
-          try {
-            await oldDocument.destroy();
-          } catch (_) {}
-        }
-
-        activeBook = null;
-        zoom = 1;
-        panX = 0;
-        panY = 0;
-
-        if (document.fullscreenElement && document.exitFullscreen) {
-          try {
-            await document.exitFullscreen();
-          } catch (_) {}
-        }
-
-        if (refresh && db) await refreshBooks();
-      } finally {
-        closingReader = false;
-      }
-    }
-
-    function flipTo(index) {
-      if (!pageFlip || !pdfDocument) return;
-
-      const target = Math.max(0, Math.min(index, pdfDocument.numPages - 1));
-      if (target === pageFlip.getCurrentPageIndex()) return;
-
-      setZoom(1, true);
-      pageFlip.flip(target);
-    }
-
-    async function toggleBookmark() {
-      if (!activeBook || !pageFlip) return;
-
-      const index = pageFlip.getCurrentPageIndex();
-
-      if (!Array.isArray(activeBook.bookmarks)) {
-        activeBook.bookmarks = [];
       }
 
-      const found = activeBook.bookmarks.indexOf(index);
+      if (typeof pageFlip.turnToPage === "function") {
+        pageFlip.turnToPage(book.currentPage);
+      }
 
-      if (found >= 0) {
-        activeBook.bookmarks.splice(found, 1);
-        notify("Marcador eliminado.");
+      updateReaderStatus();
+      updateBookmarkButton();
+      hideLoading();
+
+    } catch (error) {
+      console.error("Error abriendo PDF:", error);
+      hideLoading();
+      els.readerMessageText.textContent =
+        "No pudimos abrir este archivo. Comprobá tu conexión y probá otra vez. Si sigue fallando, volvé a importar el PDF.";
+      els.readerMessage.classList.add("show");
+      els.reader.classList.add("active");
+      els.reader.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function getCurrentPage() {
+    if (pageFlip && typeof pageFlip.getCurrentPageIndex === "function") {
+      return pageFlip.getCurrentPageIndex();
+    }
+    return currentBook ? currentBook.currentPage || 0 : 0;
+  }
+
+  function updateReaderStatus() {
+    if (!currentBook) return;
+
+    const total = currentBook.totalPages || 0;
+    const page = Math.max(0, Math.min(getCurrentPage(), Math.max(0, total - 1)));
+
+    currentBook.currentPage = page;
+    currentBook.finished = total > 0 && page >= total - 1;
+
+    els.pageLabel.textContent = total
+      ? "Página " + (page + 1) + " de " + total
+      : "Página 0 de 0";
+
+    els.progressFill.style.width = total
+      ? ((page + 1) / total * 100) + "%"
+      : "0%";
+
+    updateBookmarkButton();
+  }
+
+  function updateBookmarkButton() {
+    if (!currentBook) {
+      els.bookmarkButton.textContent = "♡";
+      return;
+    }
+
+    const page = getCurrentPage();
+    const saved = (currentBook.bookmarks || []).includes(page);
+    els.bookmarkButton.textContent = saved ? "♥" : "♡";
+    els.bookmarkButton.title = saved ? "Quitar marcador" : "Guardar marcador";
+  }
+
+  function turnPage(direction) {
+    if (!pageFlip) return;
+
+    if (direction < 0) {
+      pageFlip.flipPrev();
+    } else {
+      pageFlip.flipNext();
+    }
+  }
+
+  async function closeReader() {
+    if (closingReader) return;
+    closingReader = true;
+
+    try {
+      if (currentBook) {
+        currentBook.currentPage = getCurrentPage();
+        await saveBook(currentBook);
+      }
+
+      renderGeneration++;
+
+      if (pdfDocument) {
+        await pdfDocument.destroy().catch(() => {});
+        pdfDocument = null;
+      }
+
+      pageFlip = null;
+      currentBook = null;
+      els.flipBook.innerHTML = "";
+      els.reader.classList.remove("active");
+      els.reader.setAttribute("aria-hidden", "true");
+      els.readerMessage.classList.remove("show");
+      document.body.style.overflow = "";
+      await refreshLibrary();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      closingReader = false;
+    }
+  }
+
+  function toggleBookmark() {
+    if (!currentBook) return;
+
+    const page = getCurrentPage();
+    if (!Array.isArray(currentBook.bookmarks)) currentBook.bookmarks = [];
+
+    const index = currentBook.bookmarks.indexOf(page);
+
+    if (index >= 0) {
+      currentBook.bookmarks.splice(index, 1);
+      showToast("Marcador eliminado.");
+    } else {
+      currentBook.bookmarks.push(page);
+      showToast("Página guardada en marcadores.");
+    }
+
+    saveBook(currentBook).catch(console.error);
+    updateBookmarkButton();
+  }
+
+  function changeZoom(amount) {
+    zoomLevel = Math.max(.8, Math.min(2.2, zoomLevel + amount));
+    els.bookHost.style.transform = "scale(" + zoomLevel + ")";
+  }
+
+  async function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        await els.reader.requestFullscreen?.();
       } else {
-        activeBook.bookmarks.push(index);
-        notify("Página guardada en marcadores.");
+        await document.exitFullscreen?.();
       }
-
-      try {
-        await saveBook(activeBook);
-        updatePageInfo(index);
-      } catch (error) {
-        console.error(error);
-        notify("No se pudo guardar el marcador.");
-      }
+    } catch (error) {
+      showToast("La pantalla completa no está disponible en este navegador.");
     }
+  }
 
-    async function toggleImmersive() {
-      immersive = !immersive;
-      $("reader").classList.toggle("immersive", immersive);
-      $("immersiveBtn").textContent = immersive ? "▣" : "⛶";
-      $("immersiveBtn").title = immersive ? "Mostrar controles" : "Ocultar controles";
+  async function deleteBook(id) {
+    const book = books.find(item => String(item.id) === String(id));
+    if (!book) return;
 
-      if (immersive) {
-        try {
-          if (
-            $("reader").requestFullscreen &&
-            !/iPhone|iPad|iPod/i.test(navigator.userAgent)
-          ) {
-            await $("reader").requestFullscreen();
-          }
-        } catch (_) {
-          // El modo inmersivo CSS también funciona en Safari.
-        }
-      } else if (document.fullscreenElement && document.exitFullscreen) {
-        try {
-          await document.exitFullscreen();
-        } catch (_) {}
-      }
+    if (!confirm('¿Querés eliminar "' + book.title + '" de tu biblioteca?')) return;
+
+    try {
+      await deleteBookFromDB(book.id);
+      await refreshLibrary();
+      showToast("Libro eliminado de tu biblioteca.");
+    } catch (error) {
+      console.error(error);
+      showToast("No se pudo eliminar el libro.");
     }
+  }
 
-    /* Zoom con gesto de pellizco y desplazamiento */
-    $("bookStage").addEventListener("touchstart", event => {
-      if (event.touches.length === 2) {
-        const a = event.touches[0];
-        const b = event.touches[1];
+  function toggleTheme() {
+    document.body.classList.toggle("light");
+    const isLight = document.body.classList.contains("light");
+    els.themeButton.textContent = isLight ? "☾" : "☼";
+    localStorage.setItem("mi-biblioteca-theme", isLight ? "light" : "dark");
+    document.querySelector('meta[name="theme-color"]').content =
+      isLight ? "#f7f3fc" : "#100b19";
+  }
 
-        pinchStartDistance = Math.hypot(
-          a.clientX - b.clientX,
-          a.clientY - b.clientY
-        );
+  function restoreTheme() {
+    const theme = localStorage.getItem("mi-biblioteca-theme");
+    if (theme === "light") {
+      document.body.classList.add("light");
+      els.themeButton.textContent = "☾";
+      document.querySelector('meta[name="theme-color"]').content = "#f7f3fc";
+    }
+  }
 
-        pinchStartZoom = zoom;
-        pointerStart = null;
-      } else if (event.touches.length === 1 && zoom > 1) {
-        pointerStart = {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
-          panX,
-          panY
-        };
-      }
-    }, { passive: true });
+  els.importTop.addEventListener("click", openFilePicker);
+  els.importHero.addEventListener("click", openFilePicker);
+  els.pdfInput.addEventListener("change", event => {
+    importPDF(event.target.files && event.target.files[0]);
+  });
 
-    $("bookStage").addEventListener("touchmove", event => {
-      if (event.touches.length === 2 && pinchStartDistance > 0) {
-        const a = event.touches[0];
-        const b = event.touches[1];
+  els.searchInput.addEventListener("input", renderLibrary);
 
-        const distance = Math.hypot(
-          a.clientX - b.clientX,
-          a.clientY - b.clientY
-        );
+  document.querySelectorAll(".filter").forEach(button => {
+    button.addEventListener("click", () => {
+      currentFilter = button.dataset.filter;
 
-        setZoom(pinchStartZoom * distance / pinchStartDistance);
-        event.preventDefault();
-      } else if (event.touches.length === 1 && zoom > 1 && pointerStart) {
-        panX = pointerStart.panX + event.touches[0].clientX - pointerStart.x;
-        panY = pointerStart.panY + event.touches[0].clientY - pointerStart.y;
-        updateZoom();
-        event.preventDefault();
-      }
-    }, { passive: false });
+      document.querySelectorAll(".filter").forEach(item => {
+        item.classList.toggle("active", item === button);
+      });
 
-    $("bookStage").addEventListener("touchend", event => {
-      if (event.touches.length < 2) pinchStartDistance = 0;
-      if (event.touches.length === 0) pointerStart = null;
-    }, { passive: true });
-
-    /* Controles de la biblioteca */
-    $("importBtn").addEventListener("click", () => $("fileInput").click());
-
-    $("fileInput").addEventListener("change", event => {
-      importPDF(event.target.files && event.target.files[0]);
-    });
-
-    $("searchInput").addEventListener("input", renderLibrary);
-
-    $("filterBtn").addEventListener("click", () => {
-      showFinishedOnly = !showFinishedOnly;
       renderLibrary();
     });
+  });
 
-    $("themeBtn").addEventListener("click", () => {
-      const isLight = document.body.classList.toggle("light");
+  els.library.addEventListener("click", event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
 
-      try {
-        localStorage.setItem("mi-biblioteca-theme", isLight ? "light" : "dark");
-      } catch (_) {}
+    const { action, id } = button.dataset;
 
-      $("themeBtn").textContent = isLight ? "☾" : "☼";
-    });
+    if (action === "open") openBook(id);
+    if (action === "delete") deleteBook(id);
+  });
 
-    $("closeReaderBtn").addEventListener("click", () => closeReader());
-    $("immersiveBtn").addEventListener("click", toggleImmersive);
+  els.continueButton.addEventListener("click", () => {
+    const book = [...books]
+      .filter(item => !item.finished)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
 
-    $("exitImmersiveBtn").addEventListener("click", async () => {
-      if (immersive) await toggleImmersive();
-    });
-
-    $("bookmarkBtn").addEventListener("click", toggleBookmark);
-
-    $("prevBtn").addEventListener("click", () => {
-      if (pageFlip) flipTo(pageFlip.getCurrentPageIndex() - 1);
-    });
-
-    $("nextBtn").addEventListener("click", () => {
-      if (pageFlip) flipTo(pageFlip.getCurrentPageIndex() + 1);
-    });
-
-    $("zoomInBtn").addEventListener("click", () => setZoom(zoom + 0.25));
-    $("zoomOutBtn").addEventListener("click", () => setZoom(zoom - 0.25));
-    $("zoomResetBtn").addEventListener("click", () => setZoom(1, true));
-
-    document.addEventListener("keydown", event => {
-      if (!$("reader").classList.contains("open")) return;
-
-      if (event.key === "Escape") {
-        if (immersive) toggleImmersive();
-        else closeReader();
-      }
-
-      if (event.key === "ArrowRight" && zoom === 1) {
-        flipTo((pageFlip?.getCurrentPageIndex() || 0) + 1);
-      }
-
-      if (event.key === "ArrowLeft" && zoom === 1) {
-        flipTo((pageFlip?.getCurrentPageIndex() || 0) - 1);
-      }
-
-      if (event.key === "+" || event.key === "=") setZoom(zoom + 0.25);
-      if (event.key === "-") setZoom(zoom - 0.25);
-    });
-
-    /* Recuperar el tema elegido */
-    try {
-      if (localStorage.getItem("mi-biblioteca-theme") === "light") {
-        document.body.classList.add("light");
-        $("themeBtn").textContent = "☾";
-      }
-    } catch (_) {}
-
-    /* Inicio */
-    (async () => {
-      try {
-        await openDatabase();
-        await refreshBooks();
-      } catch (error) {
-        console.error(error);
-        notify("No se pudo abrir el almacenamiento del navegador.", 4000);
-      }
-    })();
-
-  })();
-  </script>
-
-  <!-- Registrar la PWA para instalación y caché básica -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js")
-          .catch(error => {
-            console.error("No se pudo registrar el service worker:", error);
-          });
-      });
+    if (!book) {
+      showToast("Todavía no tenés libros pendientes de lectura.");
+      return;
     }
-  </script>
+
+    openBook(book.id);
+  });
+
+  $("closeReader").addEventListener("click", closeReader);
+  $("previousPage").addEventListener("click", () => turnPage(-1));
+  $("nextPage").addEventListener("click", () => turnPage(1));
+  els.bookmarkButton.addEventListener("click", toggleBookmark);
+  $("zoomIn").addEventListener("click", () => changeZoom(.15));
+  $("zoomOut").addEventListener("click", () => changeZoom(-.15));
+  $("fullscreenButton").addEventListener("click", toggleFullscreen);
+  $("retryButton").addEventListener("click", () => {
+    if (currentBook) openBook(currentBook.id);
+  });
+  els.themeButton.addEventListener("click", toggleTheme);
+
+  document.addEventListener("keydown", event => {
+    if (!els.reader.classList.contains("active")) return;
+
+    if (event.key === "Escape") {
+      if (!document.fullscreenElement) closeReader();
+    }
+
+    if (event.key === "ArrowRight") turnPage(1);
+    if (event.key === "ArrowLeft") turnPage(-1);
+  });
+
+  // Permite ampliar con dos dedos en pantallas táctiles.
+  let initialPinchDistance = null;
+  els.readerStage.addEventListener("touchstart", event => {
+    if (event.touches.length === 2) {
+      const dx = event.touches[0].clientX - event.touches[1].clientX;
+      const dy = event.touches[0].clientY - event.touches[1].clientY;
+      initialPinchDistance = Math.hypot(dx, dy);
+    }
+  }, { passive: true });
+
+  els.readerStage.addEventListener("touchmove", event => {
+    if (event.touches.length !== 2 || initialPinchDistance === null) return;
+
+    const dx = event.touches[0].clientX - event.touches[1].clientX;
+    const dy = event.touches[0].clientY - event.touches[1].clientY;
+    const distance = Math.hypot(dx, dy);
+    const difference = distance - initialPinchDistance;
+
+    if (Math.abs(difference) > 20) {
+      changeZoom(difference > 0 ? .05 : -.05);
+      initialPinchDistance = distance;
+    }
+  }, { passive: true });
+
+  els.readerStage.addEventListener("touchend", event => {
+    if (event.touches.length < 2) initialPinchDistance = null;
+  }, { passive: true });
+
+  async function initialize() {
+    restoreTheme();
+
+    if (!("indexedDB" in window)) {
+      els.library.innerHTML = `
+        <div class="empty">
+          <h3>Almacenamiento no disponible</h3>
+          <p>Probá abrir esta página en Safari o Chrome actualizado.</p>
+        </div>`;
+      return;
+    }
+
+    try {
+      await openDatabase();
+      await refreshLibrary();
+    } catch (error) {
+      console.error("Error iniciando biblioteca:", error);
+      els.library.innerHTML = `
+        <div class="empty">
+          <h3>No se pudo iniciar la biblioteca</h3>
+          <p>Probá recargar la página o abrirla en el navegador principal.</p>
+        </div>`;
+    }
+  }
+
+  initialize();
+})();
+</script>
 </body>
 </html>
