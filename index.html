@@ -619,7 +619,16 @@ header {
 }
 </style>
 </head>
+<link rel="manifest" href="./manifest.json">
 
+<link rel="icon" type="image/png" href="./icon-192.png">
+
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+<meta name="theme-color" content="#100b19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi biblioteca">
 <body>
 <div class="app">
   <header>
@@ -1543,6 +1552,16 @@ header {
   })();
 
 })();
+</script>
+  <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(error => {
+        console.error("No se pudo registrar el service worker:", error);
+      });
+  });
+}
 </script>
 </body>
 </html>
