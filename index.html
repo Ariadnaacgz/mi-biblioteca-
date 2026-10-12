@@ -7,21 +7,12 @@
   <meta name="theme-color" content="#100b19">
   <title>Mi biblioteca</title>
 
-  <!-- PDF.js: permite leer archivos PDF -->
+  <!-- Lector de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <!-- StPageFlip: efecto realista de pasar páginas -->
+  <!-- Efecto de pasar páginas -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-<script>
-  window.addEventListener("load", function () {
-    alert(
-      window.St && window.St.PageFlip
-        ? "StPageFlip se cargó correctamente 💜"
-        : "StPageFlip NO se cargó. Hay que corregir el enlace."
-    );
-  });
-</script>
-  
+
   <style>
     :root {
       --bg: #100b19;
@@ -32,7 +23,6 @@
       --purple: #b58aff;
       --pink: #e4b5ff;
       --border: #382749;
-      --danger: #ff8b9b;
       --shadow: 0 14px 35px #00000035;
     }
 
@@ -48,9 +38,7 @@
       --shadow: 0 12px 30px #44255b15;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -59,24 +47,16 @@
         radial-gradient(ellipse at top, #42215d45, transparent 55%),
         var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       transition: background .25s, color .25s;
     }
 
-    button, input {
-      font: inherit;
-    }
-
+    button, input { font: inherit; }
     button {
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-
-    button:disabled {
-      opacity: .45;
-      cursor: not-allowed;
-    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
 
     .app {
       max-width: 1150px;
@@ -92,11 +72,7 @@
       margin-bottom: 30px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; }
 
     .brand-icon {
       width: 49px;
@@ -110,11 +86,7 @@
       box-shadow: 0 6px 25px #9857ff30;
     }
 
-    h1 {
-      font-size: 22px;
-      margin: 0;
-      letter-spacing: -.5px;
-    }
+    h1 { font-size: 22px; margin: 0; letter-spacing: -.5px; }
 
     .subtitle {
       margin: 4px 0 0;
@@ -183,15 +155,8 @@
       margin: 28px 0 16px;
     }
 
-    .section-heading h2 {
-      font-size: 19px;
-      margin: 0;
-    }
-
-    .section-heading span {
-      color: var(--muted);
-      font-size: 12px;
-    }
+    .section-heading h2 { font-size: 19px; margin: 0; }
+    .section-heading span { color: var(--muted); font-size: 12px; }
 
     .book-grid {
       display: grid;
@@ -217,18 +182,16 @@
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
+      overflow-wrap: anywhere;
       color: white;
       background:
         radial-gradient(circle at top right, #f1c8ff66, transparent 40%),
         linear-gradient(145deg, #7141a4, #241333);
-      overflow-wrap: anywhere;
     }
 
-    .cover .cover-symbol {
-      font-size: 25px;
-    }
+    .cover-symbol { font-size: 25px; }
 
-    .cover .cover-title {
+    .cover-title {
       font-size: 16px;
       line-height: 1.25;
       font-weight: 800;
@@ -238,10 +201,7 @@
       -webkit-box-orient: vertical;
     }
 
-    .cover small {
-      opacity: .8;
-      font-size: 10px;
-    }
+    .cover small { opacity: .8; font-size: 10px; }
 
     .book-title {
       margin: 12px 0 5px;
@@ -270,11 +230,7 @@
       background: linear-gradient(90deg, var(--purple), var(--pink));
     }
 
-    .card-actions {
-      display: flex;
-      gap: 6px;
-    }
-
+    .card-actions { display: flex; gap: 6px; }
     .card-actions button {
       flex: 1;
       min-width: 0;
@@ -293,14 +249,8 @@
       font-size: 13px;
     }
 
-    .empty .empty-icon {
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
-
-    #readerView {
-      display: none;
-    }
+    .empty-icon { font-size: 32px; margin-bottom: 8px; }
+    #readerView { display: none; }
 
     .reader-top {
       display: flex;
@@ -310,10 +260,7 @@
       margin-bottom: 14px;
     }
 
-    .reader-title {
-      min-width: 0;
-    }
-
+    .reader-title { min-width: 0; }
     .reader-title h2 {
       margin: 0 0 5px;
       font-size: 18px;
@@ -427,17 +374,13 @@
       font-size: 12px;
     }
 
-    #status {
+    #status, #readerStatus {
       text-align: center;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.5;
       margin: 15px 0;
       overflow-wrap: anywhere;
-    }
-
-    .hidden {
-      display: none !important;
     }
 
     footer {
@@ -448,39 +391,14 @@
     }
 
     @media (max-width: 500px) {
-      .app {
-        padding: 16px 12px 35px;
-      }
-
-      .welcome {
-        padding: 21px;
-      }
-
-      .book-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .cover {
-        height: 180px;
-      }
-
-      .reader-card {
-        padding: 8px;
-        border-radius: 16px;
-      }
-
-      #flipbook {
-        height: 62vh;
-        min-height: 320px;
-      }
-
-      .reader-tools {
-        gap: 6px;
-      }
-
-      .reader-tools button {
-        padding: 9px 10px;
-      }
+      .app { padding: 16px 12px 35px; }
+      .welcome { padding: 21px; }
+      .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cover { height: 180px; }
+      .reader-card { padding: 8px; border-radius: 16px; }
+      #flipbook { height: 62vh; min-height: 320px; }
+      .reader-tools { gap: 6px; }
+      .reader-tools button { padding: 9px 10px; }
     }
   </style>
 </head>
@@ -495,9 +413,7 @@
           <p class="subtitle">Tu pequeño rincón de lectura</p>
         </div>
       </div>
-      <button class="icon-button" id="themeButton" aria-label="Cambiar tema">
-        ☾
-      </button>
+      <button class="icon-button" id="themeButton" aria-label="Cambiar tema">☾</button>
     </header>
 
     <section id="libraryView">
@@ -507,11 +423,8 @@
           Guardá tus libros en PDF, retomá donde te quedaste y disfrutá
           de una experiencia de lectura con páginas que se doblan al pasar.
         </p>
-        <button class="primary-button" id="importButton">
-          ＋ Agregar un libro
-        </button>
-        <input id="fileInput" type="file" accept="application/pdf,.pdf"
-          multiple hidden>
+        <button class="primary-button" id="importButton">＋ Agregar un libro</button>
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden>
       </div>
 
       <div class="section-heading">
@@ -525,7 +438,6 @@
         <span id="finishedCount">0 libros</span>
       </div>
       <div id="finishedGrid" class="book-grid"></div>
-
       <p id="status" role="status"></p>
     </section>
 
@@ -542,9 +454,9 @@
         <div id="flipbook"></div>
 
         <div class="reader-tools">
-          <button id="prevButton" aria-label="Página anterior">← Anterior</button>
+          <button id="prevButton">← Anterior</button>
           <span class="page-counter" id="pageCounter">Página 1</span>
-          <button id="nextButton" aria-label="Página siguiente">Siguiente →</button>
+          <button id="nextButton">Siguiente →</button>
           <button id="bookmarkButton">☆ Marcador</button>
           <button id="fullscreenButton">⛶ Pantalla completa</button>
         </div>
@@ -555,20 +467,16 @@
           <button class="secondary-button" id="goButton">Ir</button>
         </div>
 
-        <div>
-          <div class="section-heading">
-            <h2>🔖 Mis marcadores</h2>
-          </div>
-          <div id="bookmarkList" class="bookmark-list"></div>
+        <div class="section-heading">
+          <h2>🔖 Mis marcadores</h2>
         </div>
+        <div id="bookmarkList" class="bookmark-list"></div>
       </div>
 
       <p id="readerStatus" role="status"></p>
     </section>
 
-    <footer>
-      Mi biblioteca · Hecha con cariño para tus momentos de lectura 💜
-    </footer>
+    <footer>Mi biblioteca · Hecha con cariño para tus momentos de lectura 💜</footer>
   </main>
 
   <script>
@@ -586,7 +494,7 @@
     let pageImages = [];
     let isLoadingBook = false;
 
-    const $ = (id) => document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
     function setStatus(message) {
       $("status").textContent = message || "";
@@ -597,7 +505,7 @@
     }
 
     function escapeHTML(value) {
-      return String(value).replace(/[&<>"']/g, (char) => ({
+      return String(value).replace(/[&<>"']/g, char => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
@@ -637,8 +545,7 @@
 
     function getAllBooks() {
       return new Promise((resolve, reject) => {
-        const request = db.transaction(STORE_NAME)
-          .objectStore(STORE_NAME).getAll();
+        const request = db.transaction(STORE_NAME).objectStore(STORE_NAME).getAll();
         request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => reject(request.error);
       });
@@ -646,8 +553,7 @@
 
     function getBookById(id) {
       return new Promise((resolve, reject) => {
-        const request = db.transaction(STORE_NAME)
-          .objectStore(STORE_NAME).get(id);
+        const request = db.transaction(STORE_NAME).objectStore(STORE_NAME).get(id);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
@@ -663,9 +569,11 @@
     }
 
     function formatProgress(book) {
-      if (!book.totalPages) return 0;
+      if (!book.totalPages || book.totalPages <= 1) {
+        return book.finished ? 100 : 0;
+      }
       return Math.min(100, Math.round(
-        ((book.currentPage || 0) / Math.max(1, book.totalPages - 1)) * 100
+        ((book.currentPage || 0) / (book.totalPages - 1)) * 100
       ));
     }
 
@@ -673,8 +581,6 @@
       const title = escapeHTML(book.title);
       const percent = formatProgress(book);
       const page = Math.min((book.currentPage || 0) + 1, book.totalPages || 1);
-      const actionText = finished ? "Leer de nuevo" :
-        (book.currentPage > 0 ? "Continuar" : "Leer");
 
       return `
         <article class="book-card">
@@ -693,7 +599,9 @@
           </div>
           <div class="card-actions">
             <button class="primary-button" data-action="open"
-              data-id="${escapeHTML(book.id)}">${actionText}</button>
+              data-id="${escapeHTML(book.id)}">
+              ${finished ? "Leer de nuevo" : (book.currentPage > 0 ? "Continuar" : "Leer")}
+            </button>
             <button class="secondary-button" data-action="delete"
               data-id="${escapeHTML(book.id)}" aria-label="Eliminar libro">✕</button>
           </div>
@@ -714,25 +622,23 @@
       $("libraryGrid").innerHTML = unfinished.length
         ? unfinished.map(book => bookCard(book, false)).join("")
         : `<div class="empty" style="grid-column:1/-1">
-            <div class="empty-icon">📖</div>
-            Todavía no hay libros en tu colección.<br>
-            Tocá “Agregar un libro” para comenzar.
-          </div>`;
+             <div class="empty-icon">📖</div>
+             Todavía no hay libros en tu colección.<br>
+             Tocá “Agregar un libro” para comenzar.
+           </div>`;
 
       $("finishedGrid").innerHTML = finished.length
         ? finished.map(book => bookCard(book, true)).join("")
         : `<div class="empty" style="grid-column:1/-1">
-            <div class="empty-icon">🌙</div>
-            Tus libros terminados aparecerán aquí.<br>
-            ¡Un capítulo a la vez!
-          </div>`;
+             <div class="empty-icon">🌙</div>
+             Tus libros terminados aparecerán aquí.<br>
+             ¡Un capítulo a la vez!
+           </div>`;
     }
 
-    $("importButton").addEventListener("click", () => {
-      $("fileInput").click();
-    });
+    $("importButton").addEventListener("click", () => $("fileInput").click());
 
-    $("fileInput").addEventListener("change", async (event) => {
+    $("fileInput").addEventListener("change", async event => {
       const files = Array.from(event.target.files || []);
       if (!files.length) return;
 
@@ -752,8 +658,8 @@
           }).promise;
 
           const book = {
-            id: (crypto.randomUUID ? crypto.randomUUID() :
-              `${Date.now()}-${Math.random()}`),
+            id: crypto.randomUUID ? crypto.randomUUID() :
+              `${Date.now()}-${Math.random()}`,
             title: file.name.replace(/\.pdf$/i, ""),
             filename: file.name,
             data: buffer,
@@ -769,9 +675,7 @@
           setStatus(`"${book.title}" se agregó correctamente.`);
         } catch (error) {
           console.error(error);
-          setStatus(
-            `No se pudo importar "${file.name}". Probá con otro PDF.`
-          );
+          setStatus(`No se pudo importar "${file.name}". Probá con otro PDF.`);
         }
       }
 
@@ -817,7 +721,6 @@
       $("readerStatus").textContent = "";
       $("bookmarkList").innerHTML = "";
       $("pageCounter").textContent = "Preparando...";
-      $("pageInput").value = (book.currentPage || 0) + 1;
 
       currentBook = book;
       totalPages = book.totalPages;
@@ -825,6 +728,7 @@
         Math.max(0, book.currentPage || 0),
         Math.max(0, totalPages - 1)
       );
+      $("pageInput").value = currentPage + 1;
 
       try {
         if (pageFlip) {
@@ -833,14 +737,17 @@
         }
 
         $("readerCard").classList.remove("reader-fullscreen");
+        $("fullscreenButton").textContent = "⛶ Pantalla completa";
         $("flipbook").innerHTML = "";
 
-        setReaderStatus("Preparando las páginas para el efecto de libro...");
+        setReaderStatus("Preparando páginas en alta calidad...");
+
         const pdf = await pdfjsLib.getDocument({
           data: new Uint8Array(book.data)
         }).promise;
 
         pageImages = [];
+
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d", { alpha: false });
 
@@ -848,8 +755,12 @@
           const page = await pdf.getPage(pageNumber);
           const baseViewport = page.getViewport({ scale: 1 });
 
-          // Resolución moderada para reducir el consumo de memoria en móviles.
-          const scale = Math.min(1.05, 560 / baseViewport.width);
+          /*
+            MAYOR NITIDEZ:
+            Generamos páginas de hasta 1200 píxeles de ancho.
+            La escala 2 también ayuda a conservar detalles pequeños.
+          */
+          const scale = Math.min(2, 1200 / baseViewport.width);
           const viewport = page.getViewport({ scale });
 
           canvas.width = Math.ceil(viewport.width);
@@ -861,7 +772,10 @@
             background: "white"
           }).promise;
 
-          pageImages.push(canvas.toDataURL("image/jpeg", 0.76));
+          /*
+            JPEG al 92 % para reducir los artefactos de compresión.
+          */
+          pageImages.push(canvas.toDataURL("image/jpeg", 0.92));
 
           setReaderStatus(
             `Preparando páginas: ${pageNumber} de ${pdf.numPages}...`
@@ -900,7 +814,7 @@
           useMouseEvents: true
         });
 
-        pageFlip.on("flip", async (event) => {
+        pageFlip.on("flip", async event => {
           currentPage = Number(event.data) || 0;
           currentBook.currentPage = currentPage;
 
@@ -923,12 +837,12 @@
 
         $("pageCounter").textContent =
           `Página ${currentPage + 1} de ${totalPages}`;
-        $("pageInput").value = currentPage + 1;
         $("prevButton").disabled = currentPage <= 0;
         $("nextButton").disabled = currentPage >= totalPages - 1;
 
         renderBookmarks();
         setReaderStatus("");
+
         setTimeout(() => {
           if (pageFlip) pageFlip.update();
         }, 150);
@@ -936,7 +850,7 @@
       } catch (error) {
         console.error(error);
         setReaderStatus(
-          "No se pudo abrir este PDF. Probá cerrar el libro y volver a abrirlo."
+          "No se pudo abrir este PDF. Cerrá el libro e intentá abrirlo otra vez."
         );
       } finally {
         isLoadingBook = false;
@@ -950,8 +864,10 @@
       }
 
       $("readerCard").classList.remove("reader-fullscreen");
+      $("fullscreenButton").textContent = "⛶ Pantalla completa";
       $("readerView").style.display = "none";
       $("libraryView").style.display = "block";
+
       currentBook = null;
       pageImages = [];
       refreshLibrary();
@@ -960,21 +876,18 @@
     $("backButton").addEventListener("click", closeReader);
 
     $("prevButton").addEventListener("click", () => {
-      if (pageFlip && currentPage > 0) {
-        pageFlip.flipPrev("bottom");
-      }
+      if (pageFlip && currentPage > 0) pageFlip.flipPrev("bottom");
     });
 
     $("nextButton").addEventListener("click", () => {
-      if (pageFlip && currentPage < totalPages - 1) {
-        pageFlip.flipNext("bottom");
-      }
+      if (pageFlip && currentPage < totalPages - 1) pageFlip.flipNext("bottom");
     });
 
-    $("goButton").addEventListener("click", () => {
+    $("goButton").addEventListener("click", async () => {
       if (!pageFlip) return;
 
       const requestedPage = Number($("pageInput").value);
+
       if (!Number.isFinite(requestedPage) ||
           requestedPage < 1 || requestedPage > totalPages) {
         alert(`Ingresá un número entre 1 y ${totalPages}.`);
@@ -985,20 +898,19 @@
       currentPage = requestedPage - 1;
       currentBook.currentPage = currentPage;
 
-      if (currentPage >= totalPages - 1) {
-        currentBook.finished = true;
-      }
+      if (currentPage >= totalPages - 1) currentBook.finished = true;
 
-      saveBook(currentBook);
+      await saveBook(currentBook);
       $("pageCounter").textContent =
         `Página ${currentPage + 1} de ${totalPages}`;
       $("prevButton").disabled = currentPage <= 0;
       $("nextButton").disabled = currentPage >= totalPages - 1;
+
       renderBookmarks();
       refreshLibrary();
     });
 
-    $("pageInput").addEventListener("keydown", (event) => {
+    $("pageInput").addEventListener("keydown", event => {
       if (event.key === "Enter") $("goButton").click();
     });
 
@@ -1006,18 +918,15 @@
       if (!currentBook) return;
 
       const pageNumber = currentPage + 1;
-      const exists = currentBook.bookmarks.includes(pageNumber);
+      const bookmarks = currentBook.bookmarks || [];
+      const exists = bookmarks.includes(pageNumber);
 
       currentBook.bookmarks = exists
-        ? currentBook.bookmarks.filter(page => page !== pageNumber)
-        : [...currentBook.bookmarks, pageNumber].sort((a, b) => a - b);
+        ? bookmarks.filter(page => page !== pageNumber)
+        : [...bookmarks, pageNumber].sort((a, b) => a - b);
 
       await saveBook(currentBook);
       renderBookmarks();
-
-      $("bookmarkButton").textContent = exists
-        ? "☆ Marcador"
-        : "★ Guardado";
     });
 
     function renderBookmarks() {
@@ -1039,7 +948,7 @@
           </span>`;
     }
 
-    $("bookmarkList").addEventListener("click", (event) => {
+    $("bookmarkList").addEventListener("click", async event => {
       const button = event.target.closest("button[data-page]");
       if (!button || !pageFlip) return;
 
@@ -1049,12 +958,15 @@
       currentPage = page - 1;
       currentBook.currentPage = currentPage;
 
+      if (currentPage >= totalPages - 1) currentBook.finished = true;
+
       $("pageCounter").textContent = `Página ${page} de ${totalPages}`;
       $("pageInput").value = page;
       $("prevButton").disabled = currentPage <= 0;
       $("nextButton").disabled = currentPage >= totalPages - 1;
 
-      saveBook(currentBook);
+      await saveBook(currentBook);
+      refreshLibrary();
     });
 
     $("fullscreenButton").addEventListener("click", () => {
@@ -1074,19 +986,17 @@
     $("themeButton").addEventListener("click", () => {
       document.body.classList.toggle("light");
       const light = document.body.classList.contains("light");
-
       $("themeButton").textContent = light ? "☀" : "☾";
 
       try {
         localStorage.setItem("biblioteca-theme", light ? "light" : "dark");
-      } catch (error) {
-        // El tema seguirá funcionando aunque el almacenamiento no esté disponible.
-      }
+      } catch (error) {}
     });
 
     async function init() {
       try {
         const savedTheme = localStorage.getItem("biblioteca-theme");
+
         if (savedTheme === "light") {
           document.body.classList.add("light");
           $("themeButton").textContent = "☀";
