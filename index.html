@@ -24,7 +24,6 @@
   --accent: #bd91ff;
   --accent2: #8956d9;
   --border: rgba(211,180,255,.16);
-  --danger: #ff8298;
   --shadow: 0 18px 60px rgba(0,0,0,.3);
 }
 
@@ -309,6 +308,7 @@ header {
 }
 
 .cover-icon { font-size: 48px; }
+
 .cover-label {
   position: absolute;
   bottom: 20px;
@@ -459,9 +459,7 @@ footer {
   transition: transform .12s;
 }
 
-#flipBook {
-  margin: auto;
-}
+#flipBook { margin: auto; }
 
 .pdf-page {
   background: #fff;
@@ -475,9 +473,7 @@ footer {
   object-fit: contain;
 }
 
-.reader-bottom {
-  padding: 10px 0 7px;
-}
+.reader-bottom { padding: 10px 0 7px; }
 
 .reader-progress {
   height: 4px;
@@ -506,10 +502,7 @@ footer {
   white-space: nowrap;
 }
 
-.page-nav {
-  display: flex;
-  gap: 8px;
-}
+.page-nav { display: flex; gap: 8px; }
 
 .page-nav button {
   min-height: 40px;
@@ -535,6 +528,53 @@ footer {
 }
 
 .reader-message.show { display: flex; }
+
+/* Modo de lectura inmersivo con controles automáticos */
+
+.reader.immersive .reader-top,
+.reader.immersive .reader-bottom {
+  position: absolute;
+  z-index: 20;
+  left: 8px;
+  right: 8px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .25s ease, visibility .25s ease;
+  background: rgba(16,11,25,.94);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+}
+
+.reader.immersive .reader-top {
+  top: calc(env(safe-area-inset-top) + 5px);
+  padding: 6px;
+}
+
+.reader.immersive .reader-bottom {
+  bottom: calc(env(safe-area-inset-bottom) + 5px);
+  padding: 12px;
+}
+
+.reader.immersive.controls-visible .reader-top,
+.reader.immersive.controls-visible .reader-bottom {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.reader.immersive .reader-stage {
+  padding: 0;
+}
+
+.reader.immersive #bookHost {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.reader.immersive #fullscreenButton {
+  display: flex;
+}
 
 .toast {
   position: fixed;
@@ -686,7 +726,7 @@ input[type=file] { display: none; }
       <button id="bookmarkButton" title="Guardar marcador" aria-label="Guardar marcador">♡</button>
       <button id="zoomOut" title="Alejar">−</button>
       <button id="zoomIn" title="Acercar">＋</button>
-      <button id="fullscreenButton" title="Pantalla completa">⛶</button>
+      <button id="fullscreenButton" title="Modo de lectura inmersivo">⛶</button>
     </div>
   </div>
 
@@ -729,7 +769,6 @@ input[type=file] { display: none; }
   const DB_NAME = "mi-biblioteca-db";
   const STORE_NAME = "books";
   const DB_VERSION = 1;
-
   const $ = id => document.getElementById(id);
 
   const els = {
@@ -767,6 +806,7 @@ input[type=file] { display: none; }
   let currentFilter = "all";
   let zoomLevel = 1;
   let toastTimer = null;
+  let controlsTimer = null;
   let renderGeneration = 0;
   let closingReader = false;
 
@@ -779,9 +819,7 @@ input[type=file] { display: none; }
     els.toast.textContent = message;
     els.toast.classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      els.toast.classList.remove("show");
-    }, duration);
+    toastTimer = setTimeout(() => els.toast.classList.remove("show"), duration);
   }
 
   function showLoading(title, detail = "") {
@@ -817,8 +855,8 @@ input[type=file] { display: none; }
 
   function getAllBooks() {
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const request = tx.objectStore(STORE_NAME).getAll();
+      const request = db.transaction(STORE_NAME, "readonly")
+        .objectStore(STORE_NAME).getAll();
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
@@ -845,13 +883,11 @@ input[type=file] { display: none; }
 
   function normalizeBook(book) {
     if (!book || !book.id) return null;
-
     if (!Array.isArray(book.bookmarks)) book.bookmarks = [];
     if (!Number.isFinite(book.currentPage)) book.currentPage = 0;
     if (!Number.isFinite(book.totalPages)) book.totalPages = 0;
     if (typeof book.finished !== "boolean") book.finished = false;
     if (!book.title) book.title = book.filename || "Libro sin título";
-
     return book;
   }
 
@@ -872,11 +908,11 @@ input[type=file] { display: none; }
     els.finishedBooks.textContent = books.filter(book => book.finished).length;
   }
 
-  function formatDate(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("es-PY", { day: "2-digit", month: "short", year: "numeric" });
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
+    })[char]);
   }
 
   function renderLibrary() {
@@ -929,16 +965,6 @@ input[type=file] { display: none; }
     }).join("");
   }
 
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
-  }
-
   function openFilePicker() {
     els.pdfInput.value = "";
     els.pdfInput.click();
@@ -962,12 +988,7 @@ input[type=file] { display: none; }
 
     try {
       const data = await file.arrayBuffer();
-
-      // Comprobamos el PDF antes de guardarlo.
-      const testDocument = await pdfjsLib.getDocument({
-        data: data.slice(0)
-      }).promise;
-
+      const testDocument = await pdfjsLib.getDocument({ data: data.slice(0) }).promise;
       const totalPages = testDocument.numPages;
       await testDocument.destroy();
 
@@ -1048,8 +1069,10 @@ input[type=file] { display: none; }
       const total = pdfDocument.numPages;
       book.totalPages = total;
       book.currentPage = Math.max(0, Math.min(book.currentPage || 0, total - 1));
-
       if (!Array.isArray(book.bookmarks)) book.bookmarks = [];
+
+      els.reader.classList.remove("immersive", "controls-visible");
+      clearTimeout(controlsTimer);
 
       els.readerTitle.textContent = book.title;
       els.reader.classList.add("active");
@@ -1068,13 +1091,14 @@ input[type=file] { display: none; }
       const availableWidth = Math.max(250, Math.min(window.innerWidth - 24, isMobile ? 520 : 900));
       const availableHeight = Math.max(300, window.innerHeight - (isMobile ? 145 : 165));
 
-      let pageWidth = Math.min(availableWidth / (isMobile ? 1 : 2), availableHeight * baseViewport.width / baseViewport.height);
-      let pageHeight = pageWidth * baseViewport.height / baseViewport.width;
+      let pageWidth = Math.min(
+        availableWidth / (isMobile ? 1 : 2),
+        availableHeight * baseViewport.width / baseViewport.height
+      );
 
-      pageWidth = Math.max(220, Math.floor(pageWidth));
-      pageHeight = Math.floor(pageWidth * baseViewport.height / baseViewport.width);
+      pageWidth = Math.floor(pageWidth);
+      let pageHeight = Math.floor(pageWidth * baseViewport.height / baseViewport.width);
 
-      // En móviles, limitamos el tamaño para que entre la página completa.
       if (pageHeight > availableHeight) {
         pageHeight = Math.floor(availableHeight);
         pageWidth = Math.floor(pageHeight * baseViewport.width / baseViewport.height);
@@ -1124,13 +1148,13 @@ input[type=file] { display: none; }
       const generation = renderGeneration;
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
 
-      // Renderiza las páginas en alta resolución para mejorar la nitidez.
       for (let index = 0; index < total; index++) {
         if (generation !== renderGeneration) return;
 
         const page = await pdfDocument.getPage(index + 1);
+        const base = page.getViewport({ scale: 1 });
         const viewport = page.getViewport({
-          scale: (pageWidth / page.getViewport({ scale: 1 }).width) * pixelRatio
+          scale: (pageWidth / base.width) * pixelRatio
         });
 
         const canvas = pages[index].querySelector("canvas");
@@ -1148,7 +1172,8 @@ input[type=file] { display: none; }
         }).promise;
 
         if (index % 5 === 0 || index === total - 1) {
-          els.loadingText.textContent = "Preparando página " + (index + 1) + " de " + total + "...";
+          els.loadingText.textContent =
+            "Preparando página " + (index + 1) + " de " + total + "...";
         }
       }
 
@@ -1217,18 +1242,15 @@ input[type=file] { display: none; }
 
     const page = getCurrentPage();
     const saved = (currentBook.bookmarks || []).includes(page);
+
     els.bookmarkButton.textContent = saved ? "♥" : "♡";
     els.bookmarkButton.title = saved ? "Quitar marcador" : "Guardar marcador";
   }
 
   function turnPage(direction) {
     if (!pageFlip) return;
-
-    if (direction < 0) {
-      pageFlip.flipPrev();
-    } else {
-      pageFlip.flipNext();
-    }
+    if (direction < 0) pageFlip.flipPrev();
+    else pageFlip.flipNext();
   }
 
   async function closeReader() {
@@ -1242,6 +1264,7 @@ input[type=file] { display: none; }
       }
 
       renderGeneration++;
+      clearTimeout(controlsTimer);
 
       if (pdfDocument) {
         await pdfDocument.destroy().catch(() => {});
@@ -1251,10 +1274,14 @@ input[type=file] { display: none; }
       pageFlip = null;
       currentBook = null;
       els.flipBook.innerHTML = "";
-      els.reader.classList.remove("active");
+
+      els.reader.classList.remove("immersive", "controls-visible", "active");
+      $("fullscreenButton").textContent = "⛶";
+
       els.reader.setAttribute("aria-hidden", "true");
       els.readerMessage.classList.remove("show");
       document.body.style.overflow = "";
+
       await refreshLibrary();
     } catch (error) {
       console.error(error);
@@ -1288,15 +1315,34 @@ input[type=file] { display: none; }
     els.bookHost.style.transform = "scale(" + zoomLevel + ")";
   }
 
-  async function toggleFullscreen() {
-    try {
-      if (!document.fullscreenElement) {
-        await els.reader.requestFullscreen?.();
-      } else {
-        await document.exitFullscreen?.();
-      }
-    } catch (error) {
-      showToast("La pantalla completa no está disponible en este navegador.");
+  function showReaderControls() {
+    if (!els.reader.classList.contains("immersive")) return;
+
+    els.reader.classList.add("controls-visible");
+    clearTimeout(controlsTimer);
+
+    controlsTimer = setTimeout(() => {
+      els.reader.classList.remove("controls-visible");
+    }, 3000);
+  }
+
+  function toggleFullscreen() {
+    const immersive = !els.reader.classList.contains("immersive");
+
+    clearTimeout(controlsTimer);
+    els.reader.classList.toggle("immersive", immersive);
+    els.reader.classList.remove("controls-visible");
+
+    $("fullscreenButton").textContent = immersive ? "⤢" : "⛶";
+    $("fullscreenButton").title = immersive
+      ? "Salir del modo inmersivo"
+      : "Modo de lectura inmersivo";
+
+    if (immersive) {
+      showReaderControls();
+      showToast("Modo de lectura inmersivo activado.");
+    } else {
+      showToast("Modo de lectura normal.");
     }
   }
 
@@ -1319,15 +1365,16 @@ input[type=file] { display: none; }
   function toggleTheme() {
     document.body.classList.toggle("light");
     const isLight = document.body.classList.contains("light");
+
     els.themeButton.textContent = isLight ? "☾" : "☼";
     localStorage.setItem("mi-biblioteca-theme", isLight ? "light" : "dark");
+
     document.querySelector('meta[name="theme-color"]').content =
       isLight ? "#f7f3fc" : "#100b19";
   }
 
   function restoreTheme() {
-    const theme = localStorage.getItem("mi-biblioteca-theme");
-    if (theme === "light") {
+    if (localStorage.getItem("mi-biblioteca-theme") === "light") {
       document.body.classList.add("light");
       els.themeButton.textContent = "☾";
       document.querySelector('meta[name="theme-color"]').content = "#f7f3fc";
@@ -1336,6 +1383,7 @@ input[type=file] { display: none; }
 
   els.importTop.addEventListener("click", openFilePicker);
   els.importHero.addEventListener("click", openFilePicker);
+
   els.pdfInput.addEventListener("change", event => {
     importPDF(event.target.files && event.target.files[0]);
   });
@@ -1359,7 +1407,6 @@ input[type=file] { display: none; }
     if (!button) return;
 
     const { action, id } = button.dataset;
-
     if (action === "open") openBook(id);
     if (action === "delete") deleteBook(id);
   });
@@ -1389,19 +1436,38 @@ input[type=file] { display: none; }
   });
   els.themeButton.addEventListener("click", toggleTheme);
 
+  // Tocar el área de lectura muestra los controles temporalmente.
+  els.readerStage.addEventListener("click", event => {
+    if (!els.reader.classList.contains("immersive")) return;
+    if (event.target.closest("button")) return;
+    showReaderControls();
+  });
+
+  // En móviles, el toque vuelve a mostrar los controles.
+  els.readerStage.addEventListener("touchend", event => {
+    if (!els.reader.classList.contains("immersive")) return;
+    if (event.changedTouches.length !== 1) return;
+    showReaderControls();
+  }, { passive: true });
+
   document.addEventListener("keydown", event => {
     if (!els.reader.classList.contains("active")) return;
 
     if (event.key === "Escape") {
-      if (!document.fullscreenElement) closeReader();
+      if (els.reader.classList.contains("immersive")) {
+        toggleFullscreen();
+      } else if (!document.fullscreenElement) {
+        closeReader();
+      }
     }
 
     if (event.key === "ArrowRight") turnPage(1);
     if (event.key === "ArrowLeft") turnPage(-1);
   });
 
-  // Permite ampliar con dos dedos en pantallas táctiles.
+  // Zoom con dos dedos.
   let initialPinchDistance = null;
+
   els.readerStage.addEventListener("touchstart", event => {
     if (event.touches.length === 2) {
       const dx = event.touches[0].clientX - event.touches[1].clientX;
