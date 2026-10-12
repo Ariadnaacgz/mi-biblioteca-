@@ -22,12 +22,13 @@
   --danger: #ff8f9b;
 }
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
-  background: radial-gradient(ellipse at top, #291b3d, var(--bg) 65%);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
+  color: var(--text);
+  background: radial-gradient(ellipse at top, #291b3d, var(--bg) 65%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 body.light {
   --bg: #f5effb;
@@ -47,7 +48,6 @@ button {
   border-radius: 12px;
   padding: 10px 14px;
   cursor: pointer;
-  transition: .15s;
 }
 button:hover { border-color: var(--accent); }
 button:disabled { opacity: .4; cursor: not-allowed; }
@@ -57,6 +57,7 @@ button.primary {
   font-weight: 700;
 }
 button.danger { color: var(--danger); }
+
 header {
   padding: 22px 18px;
   border-bottom: 1px solid var(--border);
@@ -68,8 +69,10 @@ header {
 }
 .brand { display: flex; align-items: center; gap: 12px; }
 .logo {
-  width: 44px; height: 44px;
-  display: grid; place-items: center;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
   border-radius: 14px;
   background: linear-gradient(135deg, #d5b2ff, #8652b5);
   color: #20102e;
@@ -82,22 +85,17 @@ main { max-width: 1200px; margin: auto; padding: 24px 16px 60px; }
 .intro { margin-bottom: 25px; }
 .intro h2 { font-size: 27px; margin: 0 0 8px; }
 p { color: var(--muted); line-height: 1.5; }
-.toolbar {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  margin: 20px 0;
-}
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
 input[type="search"] {
-  flex: 1; min-width: 180px;
+  flex: 1;
+  min-width: 180px;
   background: var(--panel);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 12px;
   padding: 12px;
 }
-.section-title {
-  font-size: 17px;
-  margin: 26px 0 15px;
-}
+.section-title { font-size: 17px; margin: 26px 0 15px; }
 .library {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
@@ -127,8 +125,10 @@ input[type="search"] {
 }
 .book-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
 .progress {
-  height: 4px; border-radius: 9px;
-  background: var(--border); margin: 10px 0;
+  height: 4px;
+  border-radius: 9px;
+  background: var(--border);
+  margin: 10px 0;
   overflow: hidden;
 }
 .progress span { display: block; height: 100%; background: var(--accent); }
@@ -161,6 +161,7 @@ input[type="search"] {
            max(12px, env(safe-area-inset-bottom));
 }
 #reader.active { display: block; }
+
 .reader-card {
   min-height: 100%;
   max-width: 1200px;
@@ -169,22 +170,22 @@ input[type="search"] {
   flex-direction: column;
   gap: 12px;
 }
-.reader-top, .reader-tools {
+.reader-top, .reader-tools, .reader-bottom {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
+.reader-top { justify-content: space-between; }
 .reader-top h2 {
   font-size: 15px;
   overflow-wrap: anywhere;
   flex: 1;
-  min-width: 120px;
+  min-width: 100px;
   margin: 0;
+  text-align: center;
 }
-.reader-tools { justify-content: center; }
-#pageInfo { color: var(--muted); font-size: 13px; text-align: center; }
 #flipHost {
   width: 100%;
   min-height: 300px;
@@ -192,28 +193,78 @@ input[type="search"] {
   align-items: center;
   justify-content: center;
   flex: 1;
+  overflow: hidden;
 }
-#flipbook {
-  margin: auto;
-  max-width: 100%;
+#flipbook { margin: auto; }
+
+/* Cada página conserva su imagen de alta calidad */
+.pdf-page {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+  color: #111;
 }
-.reader-bottom {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.pdf-page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  -webkit-user-drag: none;
+  user-select: none;
 }
+#pageInfo {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+#exitFullscreenFloat { display: none; }
+
+/* Pantalla completa: ocultamos las barras y dejamos solo el libro */
 #reader.reader-fullscreen {
-  padding: max(6px, env(safe-area-inset-top)) 6px
-           max(6px, env(safe-area-inset-bottom));
+  padding: 0;
+  overflow: hidden;
 }
-.reader-fullscreen .reader-card {
+#reader.reader-fullscreen .reader-card {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  min-height: 0;
   max-width: none;
-  min-height: calc(100dvh - 12px);
+  gap: 0;
 }
-.reader-fullscreen #flipHost { min-height: 0; }
-.reader-fullscreen .reader-top { flex-shrink: 0; }
-.reader-fullscreen .reader-bottom { flex-shrink: 0; }
+#reader.reader-fullscreen .reader-top,
+#reader.reader-fullscreen #pageInfo,
+#reader.reader-fullscreen .reader-bottom,
+#reader.reader-fullscreen .reader-tools {
+  display: none !important;
+}
+#reader.reader-fullscreen #flipHost {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+#reader.reader-fullscreen #flipbook { margin: auto; }
+
+/* Este botón permanece accesible en el iPhone */
+#reader.reader-fullscreen #exitFullscreenFloat {
+  display: block;
+  position: fixed;
+  z-index: 100;
+  top: max(10px, env(safe-area-inset-top));
+  right: 10px;
+  border: 1px solid #ffffff55;
+  border-radius: 999px;
+  color: #fff;
+  background: #20152bd9;
+  padding: 10px 14px;
+  font-size: 13px;
+  box-shadow: 0 4px 18px #0005;
+}
+
 @media (max-width: 600px) {
   header { padding: 16px 12px; }
   main { padding: 20px 12px 40px; }
@@ -260,7 +311,7 @@ input[type="search"] {
 </main>
 
 <section id="reader" aria-label="Lector de libros">
-  <div class="reader-card" id="readerCard">
+  <div class="reader-card">
     <div class="reader-top">
       <button id="closeBtn" type="button">← Biblioteca</button>
       <h2 id="readerTitle">Leyendo...</h2>
@@ -284,6 +335,10 @@ input[type="search"] {
       <button id="finishBtn" type="button">✓ Marcar terminado</button>
     </div>
   </div>
+
+  <button id="exitFullscreenFloat" type="button">
+    ✕ Salir de pantalla completa
+  </button>
 </section>
 
 <script>
@@ -301,7 +356,8 @@ input[type="search"] {
   let pageUrls = [];
   let filterMode = "all";
   let isFullscreen = false;
-  let savingProgress = false;
+  let progressTimer = null;
+  let openingToken = 0;
 
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -354,14 +410,35 @@ input[type="search"] {
     });
   }
 
-  function safeText(value) {
-    return String(value ?? "");
+  function releasePageUrls() {
+    pageUrls.forEach(url => URL.revokeObjectURL(url));
+    pageUrls = [];
+  }
+
+  function destroyFlipbook() {
+    if (pageFlip) {
+      try { pageFlip.destroy(); } catch (error) {
+        console.warn("No se pudo cerrar el efecto de páginas", error);
+      }
+      pageFlip = null;
+    }
+
+    // StPageFlip elimina su elemento raíz al destruirse.
+    // Creamos un nuevo elemento para la próxima lectura.
+    $("flipHost").replaceChildren();
+
+    const root = document.createElement("div");
+    root.id = "flipbook";
+    $("flipHost").appendChild(root);
+
+    return root;
   }
 
   function renderLibrary() {
     const query = $("search").value.trim().toLowerCase();
     const filtered = books.filter(book => {
-      const matchesSearch = safeText(book.title).toLowerCase().includes(query);
+      const matchesSearch = String(book.title || "")
+        .toLowerCase().includes(query);
       const matchesMode = filterMode === "all" || book.finished;
       return matchesSearch && matchesMode;
     });
@@ -396,17 +473,15 @@ input[type="search"] {
       title.className = "book-title";
       title.textContent = book.title || "Libro sin título";
 
-      const pageCount = Number(book.totalPages) || 0;
-      const currentPage = Number(book.currentPage) || 0;
-      const progress = pageCount
-        ? Math.min(100, Math.round(((currentPage + 1) / pageCount) * 100))
+      const total = Number(book.totalPages) || 0;
+      const current = Number(book.currentPage) || 0;
+      const progress = total
+        ? Math.min(100, Math.round(((current + 1) / total) * 100))
         : 0;
 
       const meta = document.createElement("div");
       meta.className = "book-meta";
-      meta.textContent = book.finished
-        ? "Terminado ✓"
-        : `${progress}% leído`;
+      meta.textContent = book.finished ? "Terminado ✓" : `${progress}% leído`;
 
       const bar = document.createElement("div");
       bar.className = "progress";
@@ -449,61 +524,17 @@ input[type="search"] {
     setStatus(`${books.length} libro(s) en tu biblioteca.`);
   }
 
-  function canvasToUrl(canvas) {
-    return new Promise((resolve, reject) => {
-      const finish = (blob) => {
-        if (!blob) {
-          reject(new Error("No se pudo convertir una página del PDF."));
-          return;
-        }
-        resolve(URL.createObjectURL(blob));
-      };
-
-      try {
-        canvas.toBlob(finish, "image/webp", 0.94);
-      } catch (error) {
-        try {
-          canvas.toBlob(finish, "image/jpeg", 0.94);
-        } catch (secondError) {
-          reject(secondError);
-        }
-      }
-    });
-  }
-
-  function releasePageUrls() {
-    pageUrls.forEach(url => URL.revokeObjectURL(url));
-    pageUrls = [];
-  }
-
-  function resetFlipbook() {
-    if (pageFlip) {
-      try { pageFlip.destroy(); } catch (error) {}
-      pageFlip = null;
-    }
-
-    // StPageFlip elimina su elemento raíz al destruirse.
-    // Por eso creamos uno nuevo dentro del contenedor permanente.
-    const host = $("flipHost");
-    host.replaceChildren();
-
-    const root = document.createElement("div");
-    root.id = "flipbook";
-    host.appendChild(root);
-
-    return root;
-  }
-
   async function importPdf(file) {
     if (!file) return;
+
     if (file.type !== "application/pdf" &&
         !file.name.toLowerCase().endsWith(".pdf")) {
       alert("Elegí un archivo PDF.");
       return;
     }
 
-    setStatus("Importando PDF...");
     $("importBtn").disabled = true;
+    setStatus("Importando PDF...");
 
     try {
       const data = await file.arrayBuffer();
@@ -511,12 +542,15 @@ input[type="search"] {
         data: data.slice(0)
       }).promise;
 
+      const id = crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
       const book = {
-        id: (crypto.randomUUID ? crypto.randomUUID() :
-          `${Date.now()}-${Math.random().toString(16).slice(2)}`),
+        id,
         title: file.name.replace(/\.pdf$/i, ""),
         filename: file.name,
-        data: data,
+        data,
         totalPages: pdf.numPages,
         currentPage: 0,
         finished: false,
@@ -537,88 +571,127 @@ input[type="search"] {
     }
   }
 
-  async function renderPdfPages(book) {
+  function canvasToBlob(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          reject(new Error("No se pudo crear la imagen de la página."));
+          return;
+        }
+        resolve(blob);
+      }, "image/webp", 0.99);
+    });
+  }
+
+  async function createHtmlPages(book, root, token) {
     const pdf = await pdfjsLib.getDocument({
       data: book.data instanceof ArrayBuffer
         ? book.data.slice(0)
         : book.data
     }).promise;
 
-    const images = [];
     const total = pdf.numPages;
 
     for (let number = 1; number <= total; number++) {
-      $("pageInfo").textContent =
-        `Preparando página ${number} de ${total}...`;
+      if (token !== openingToken) {
+        throw new Error("La apertura del libro fue cancelada.");
+      }
+
+      $("pageInfo").textContent = `Preparando página ${number} de ${total}...`;
 
       const page = await pdf.getPage(number);
-      const original = page.getViewport({ scale: 1 });
+      const base = page.getViewport({ scale: 1 });
 
-      // Mantiene buena nitidez y limita el uso de memoria.
-      const targetWidth = total > 180 ? 900 : total > 90 ? 1050 : 1350;
-      const scale = Math.min(2.2, targetWidth / original.width);
+      // Mayor resolución para conservar la legibilidad del texto.
+      const targetWidth = total > 220 ? 1400 : 1800;
+      const scale = Math.min(2.6, targetWidth / base.width);
       const viewport = page.getViewport({ scale });
 
       const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d", { alpha: false });
-
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
+
+      const context = canvas.getContext("2d", { alpha: false });
+      if (!context) throw new Error("No se pudo crear el lienzo del PDF.");
 
       context.fillStyle = "#ffffff";
       context.fillRect(0, 0, canvas.width, canvas.height);
 
       await page.render({
         canvasContext: context,
-        viewport: viewport
+        viewport
       }).promise;
 
-      let url;
+      let blob;
       try {
-        url = await canvasToUrl(canvas);
-      } catch (error) {
+        blob = await canvasToBlob(canvas);
+      } finally {
+        // No mantenemos los lienzos originales en memoria.
         canvas.width = 1;
         canvas.height = 1;
-        throw error;
+        page.cleanup();
       }
 
-      images.push(url);
+      const url = URL.createObjectURL(blob);
       pageUrls.push(url);
 
-      // Libera la memoria del lienzo después de guardar la página.
-      canvas.width = 1;
-      canvas.height = 1;
-      page.cleanup();
+      const pageElement = document.createElement("div");
+      pageElement.className = "pdf-page";
 
-      if (number % 8 === 0) {
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = `Página ${number}`;
+      image.draggable = false;
+      image.decoding = "async";
+
+      pageElement.appendChild(image);
+      root.appendChild(pageElement);
+
+      if (number % 6 === 0) {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
     }
 
-    return images;
+    return total;
   }
 
   async function openBook(bookId) {
     const book = books.find(item => item.id === bookId);
     if (!book) return;
 
+    openingToken++;
+    const token = openingToken;
+
+    if (progressTimer) {
+      clearTimeout(progressTimer);
+      progressTimer = null;
+    }
+
+    if (pageFlip) {
+      try { pageFlip.destroy(); } catch (error) {}
+      pageFlip = null;
+    }
+
+    releasePageUrls();
+
     currentBook = book;
     isFullscreen = false;
     $("reader").classList.remove("reader-fullscreen");
     $("reader").classList.add("active");
+    $("fullscreenBtn").textContent = "⛶ Pantalla completa";
     $("readerTitle").textContent = book.title;
-    $("pageInfo").textContent = "Preparando libro...";
+    $("pageInfo").textContent = "Preparando páginas...";
+    $("finishBtn").textContent = book.finished
+      ? "↩ Marcar como no terminado"
+      : "✓ Marcar terminado";
+
+    const root = destroyFlipbook();
     $("prevBtn").disabled = true;
     $("nextBtn").disabled = true;
 
-    releasePageUrls();
-    const root = resetFlipbook();
-
     try {
-      const pageImages = await renderPdfPages(book);
-      if (currentBook !== book) return;
-
-      root.style.width = "100%";
+      const total = await createHtmlPages(book, root, token);
+      if (token !== openingToken || currentBook !== book) return;
 
       pageFlip = new St.PageFlip(root, {
         width: 420,
@@ -629,13 +702,13 @@ input[type="search"] {
         minHeight: 340,
         maxHeight: 1400,
         drawShadow: true,
-        flippingTime: 700,
+        flippingTime: 750,
         usePortrait: true,
         startPage: Math.max(
-          0, Math.min(Number(book.currentPage) || 0, pageImages.length - 1)
+          0, Math.min(Number(book.currentPage) || 0, total - 1)
         ),
         autoSize: true,
-        maxShadowOpacity: 0.45,
+        maxShadowOpacity: 0.4,
         showCover: true,
         mobileScrollSupport: false,
         swipeDistance: 25,
@@ -645,37 +718,39 @@ input[type="search"] {
 
       pageFlip.on("flip", event => {
         if (!currentBook || !pageFlip) return;
+
         currentBook.currentPage = event.data;
         updatePageInfo();
 
-        // Guardamos el progreso sin volver a dibujar toda la biblioteca.
-        if (!savingProgress) {
-          savingProgress = true;
-          saveBook(currentBook)
-            .catch(console.error)
-            .finally(() => { savingProgress = false; });
-        }
+        // Agrupamos los guardados para evitar trabajo en cada movimiento.
+        if (progressTimer) clearTimeout(progressTimer);
+        const bookToSave = currentBook;
+
+        progressTimer = setTimeout(() => {
+          saveBook(bookToSave).catch(console.error);
+          progressTimer = null;
+        }, 250);
       });
 
-      pageFlip.loadFromImages(pageImages);
-      $("prevBtn").disabled = false;
-      $("nextBtn").disabled = false;
-
-      // El lector informa cuando terminó de cargar las imágenes.
       pageFlip.on("init", () => {
         if (currentBook === book) updatePageInfo();
       });
 
+      pageFlip.loadFromHTML(root.querySelectorAll(".pdf-page"));
+      $("prevBtn").disabled = false;
+      $("nextBtn").disabled = false;
       updatePageInfo();
     } catch (error) {
+      if (token !== openingToken) return;
       console.error(error);
-      alert("No pude abrir este libro. Si tiene muchas páginas, probá con un PDF más liviano.");
-      closeReader();
+      alert("No pude abrir este PDF. Probá con un archivo más liviano si tiene muchísimas páginas.");
+      await closeReader();
     }
   }
 
   function updatePageInfo() {
     if (!pageFlip || !currentBook) return;
+
     const page = pageFlip.getCurrentPageIndex();
     const total = pageFlip.getPageCount();
 
@@ -689,6 +764,13 @@ input[type="search"] {
   }
 
   async function closeReader() {
+    openingToken++;
+
+    if (progressTimer) {
+      clearTimeout(progressTimer);
+      progressTimer = null;
+    }
+
     if (currentBook && pageFlip) {
       try {
         currentBook.currentPage = pageFlip.getCurrentPageIndex();
@@ -701,6 +783,7 @@ input[type="search"] {
     currentBook = null;
     isFullscreen = false;
     $("reader").classList.remove("active", "reader-fullscreen");
+    $("fullscreenBtn").textContent = "⛶ Pantalla completa";
 
     if (pageFlip) {
       try { pageFlip.destroy(); } catch (error) {}
@@ -713,6 +796,25 @@ input[type="search"] {
     await refreshLibrary();
   }
 
+  function toggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    $("reader").classList.toggle("reader-fullscreen", isFullscreen);
+    $("fullscreenBtn").textContent = isFullscreen
+      ? "⛶ Salir de pantalla completa"
+      : "⛶ Pantalla completa";
+
+    // Recalcula el área del libro después de aplicar el nuevo tamaño.
+    if (pageFlip) {
+      setTimeout(() => {
+        if (pageFlip && isFullscreen) {
+          try { pageFlip.update(); } catch (error) {
+            console.warn("No se pudo ajustar el libro", error);
+          }
+        }
+      }, 250);
+    }
+  }
+
   $("prevBtn").addEventListener("click", () => {
     if (pageFlip) pageFlip.flipPrev();
   });
@@ -722,28 +824,8 @@ input[type="search"] {
   });
 
   $("closeBtn").addEventListener("click", closeReader);
-
-  $("fullscreenBtn").addEventListener("click", () => {
-    isFullscreen = !isFullscreen;
-    $("reader").classList.toggle("reader-fullscreen", isFullscreen);
-    $("fullscreenBtn").textContent = isFullscreen
-      ? "⛶ Salir de pantalla completa"
-      : "⛶ Pantalla completa";
-
-    // Dejamos que el navegador aplique el nuevo tamaño antes de actualizar.
-    // No destruimos ni volvemos a cargar las páginas del libro.
-    if (pageFlip) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          if (pageFlip) {
-            try { pageFlip.update(); } catch (error) {
-              console.warn("No se pudo reajustar el libro", error);
-            }
-          }
-        }, 250);
-      });
-    }
-  });
+  $("fullscreenBtn").addEventListener("click", toggleFullscreen);
+  $("exitFullscreenFloat").addEventListener("click", toggleFullscreen);
 
   $("bookmarkBtn").addEventListener("click", async () => {
     if (!currentBook || !pageFlip) return;
@@ -771,7 +853,7 @@ input[type="search"] {
     }
 
     const choice = prompt(
-      "Tus páginas guardadas:\n" +
+      "Páginas guardadas:\n" +
       marks.map(page => `Página ${page + 1}`).join("\n") +
       "\n\nEscribí el número de página al que querés ir:"
     );
@@ -803,6 +885,7 @@ input[type="search"] {
   });
 
   $("importBtn").addEventListener("click", () => $("fileInput").click());
+
   $("fileInput").addEventListener("change", event => {
     importPdf(event.target.files[0]);
   });
@@ -833,10 +916,9 @@ input[type="search"] {
 
   document.addEventListener("keydown", event => {
     if (!$("reader").classList.contains("active")) return;
+
     if (event.key === "Escape" && isFullscreen) {
-      isFullscreen = false;
-      $("reader").classList.remove("reader-fullscreen");
-      $("fullscreenBtn").textContent = "⛶ Pantalla completa";
+      toggleFullscreen();
     } else if (event.key === "ArrowRight" && pageFlip) {
       pageFlip.flipNext();
     } else if (event.key === "ArrowLeft" && pageFlip) {
@@ -846,12 +928,16 @@ input[type="search"] {
 
   async function init() {
     try {
+      if (!window.St || !window.St.PageFlip || !window.pdfjsLib) {
+        throw new Error("No se pudieron cargar las bibliotecas del lector.");
+      }
+
       db = await openDatabase();
       await refreshLibrary();
     } catch (error) {
       console.error(error);
-      setStatus("No se pudo acceder al almacenamiento. Revisá la configuración del navegador.");
-      alert("No se pudo abrir la biblioteca. Tus datos anteriores no se han borrado.");
+      setStatus("No se pudo iniciar la biblioteca. Revisá tu conexión.");
+      alert("No se pudo iniciar el lector. Comprobá tu conexión a Internet.");
     }
   }
 
