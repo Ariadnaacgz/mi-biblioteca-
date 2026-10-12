@@ -1,1255 +1,769 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#100d18">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Mi biblioteca personal para leer tus PDF favoritos.">
-  <title>Mi biblioteca</title>
-
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #100d18;
-      --panel: #1b1627;
-      --panel2: #251d35;
-      --text: #f7f3ff;
-      --muted: #b5a9c9;
-      --line: #392c4e;
-      --accent: #bd8cff;
-      --accent2: #8d5ce6;
-      --danger: #ff829d;
-      --shadow: 0 12px 32px #0003;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-
-    html {
-      min-height: 100%;
-      background: var(--bg);
-      -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      background:
-        radial-gradient(ellipse at top right, #47276a55, transparent 42%),
-        var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-      line-height: 1.5;
-    }
-
-    body.light {
-      color-scheme: light;
-      --bg: #f7f3fc;
-      --panel: #ffffff;
-      --panel2: #eee5f9;
-      --text: #251a35;
-      --muted: #70627f;
-      --line: #e1d5ef;
-      --accent: #8550c9;
-      --accent2: #a16ce0;
-      --danger: #bd355b;
-      --shadow: 0 12px 32px #43275c12;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      min-height: 42px;
-      padding: 10px 13px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--panel2);
-      color: var(--text);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    button:disabled {
-      opacity: .35;
-      cursor: not-allowed;
-    }
-
-    button:focus-visible,
-    input:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-    }
-
-    button.primary,
-    .upload.primary {
-      color: #180e26;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-color: transparent;
-      font-weight: 700;
-    }
-
-    button.danger {
-      color: var(--danger);
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 22px 18px;
-      max-width: 1050px;
-      margin: auto;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 27px;
-      letter-spacing: -.8px;
-    }
-
-    header h1 span {
-      color: var(--accent);
-    }
-
-    .subtitle {
-      color: var(--muted);
-      font-size: 10px;
-      letter-spacing: 1.7px;
-    }
-
-    main {
-      max-width: 1050px;
-      padding: 0 14px 20px;
-      margin: auto;
-    }
-
-    .card {
-      padding: 18px;
-      margin-bottom: 15px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 19px;
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-
-    h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    p {
-      margin-top: 6px;
-      margin-bottom: 12px;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      flex-wrap: wrap;
-    }
-
-    .between {
-      justify-content: space-between;
-    }
-
-    .upload {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      min-height: 48px;
-      padding: 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .upload input {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .book-list {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .book {
-      min-width: 0;
-      padding: 10px;
-      background: var(--panel2);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-    }
-
-    .cover {
-      display: grid;
-      place-items: center;
-      height: 115px;
-      margin-bottom: 9px;
-      border-radius: 9px;
-      background: linear-gradient(145deg, #322044, #8b5bc0);
-      color: #fff;
-      font-size: 42px;
-    }
-
-    .book-name {
-      font-size: 13px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-
-    .book-meta {
-      margin: 5px 0 9px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .book-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .book-actions button {
-      flex: 1;
-      min-width: 0;
-      padding: 8px 5px;
-      font-size: 12px;
-    }
-
-    #readerCard {
-      position: relative;
-    }
-
-    .reader-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .reader-heading > div {
-      min-width: 0;
-    }
-
-    #readerTitle {
-      overflow-wrap: anywhere;
-    }
-
-    #fullscreenBtn {
-      align-self: flex-end;
-      margin: 2px 0 10px auto;
-    }
-
-    #pdfCanvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-width: 100%;
-      background: white;
-    }
-
-    #reader {
-      width: 100%;
-      min-height: 150px;
-      margin: 12px 0;
-      overflow: auto;
-      border-radius: 10px;
-      background: #28232f;
-      overscroll-behavior: contain;
-      touch-action: pan-y;
-    }
-
-    #paper {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      transform-origin: center;
-      perspective: 1000px;
-    }
-
-    #paper.slide {
-      animation: slidePage .25s ease;
-    }
-
-    #paper.flip {
-      animation: flipPage .5s ease;
-    }
-
-    @keyframes slidePage {
-      from { opacity: .35; transform: translateX(20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes flipPage {
-      0% { transform: rotateY(0); }
-      45% { transform: rotateY(-35deg); opacity: .65; }
-      100% { transform: rotateY(0); opacity: 1; }
-    }
-
-    .reader-tools {
-      display: grid;
-      gap: 10px;
-    }
-
-    .reader-tools .row > button {
-      flex: 1;
-    }
-
-    input[type=number],
-    input[type=text] {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--line);
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 100%;
-    }
-
-    input[type=number] {
-      width: 76px;
-    }
-
-    progress {
-      width: 100%;
-      height: 6px;
-      accent-color: var(--accent);
-    }
-
-    .bookmark-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .bookmark-item:last-child {
-      border-bottom: 0;
-    }
-
-    .bookmark-item span {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .bookmark-item button {
-      flex-shrink: 0;
-      padding: 8px 10px;
-    }
-
-    #message {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    footer {
-      color: var(--muted);
-      text-align: center;
-      font-size: 11px;
-      padding: 10px 20px 30px;
-    }
-
-    /* LECTOR A PANTALLA COMPLETA */
-
-    #readerCard.reader-fullscreen {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      max-height: none;
-      margin: 0;
-      padding:
-        max(10px, env(safe-area-inset-top))
-        8px
-        max(10px, env(safe-area-inset-bottom));
-      border: 0;
-      border-radius: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      overflow: hidden;
-      background: var(--bg);
-      box-shadow: none;
-    }
-
-    #readerCard.reader-fullscreen .reader-heading {
-      flex-shrink: 0;
-    }
-
-    #readerCard.reader-fullscreen #reader {
-      flex: 1;
-      min-height: 0;
-      height: auto;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    #readerCard.reader-fullscreen #paper {
-      width: 100%;
-      flex-shrink: 0;
-    }
-
-    #readerCard.reader-fullscreen #pdfCanvas {
-      max-width: 100%;
-      height: auto;
-      object-fit: contain;
-    }
-
-    #readerCard.reader-fullscreen #fullscreenBtn {
-      position: fixed;
-      right: 12px;
-      bottom: max(14px, env(safe-area-inset-bottom));
-      z-index: 10001;
-      width: 46px;
-      height: 46px;
-      padding: 0;
-      border-radius: 50%;
-      background: var(--panel2);
-      box-shadow: 0 4px 18px #0005;
-      font-size: 18px;
-    }
-
-    #readerCard.reader-fullscreen .reader-heading.is-hidden,
-    #readerCard.reader-fullscreen .reader-tools.is-hidden,
-    #readerCard.reader-fullscreen #progress.is-hidden {
-      display: none !important;
-    }
-
-    #readerCard.reader-fullscreen #reader {
-      margin-top: 0;
-    }
-
-    #readerCard.reader-fullscreen #readerTools {
-      flex-shrink: 0;
-    }
-
-    @media (min-width: 600px) {
-      .book-list {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .cover {
-        height: 145px;
-      }
-
-      #readerCard.reader-fullscreen {
-        padding-left: 18px;
-        padding-right: 18px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: .01ms !important;
-        transition-duration: .01ms !important;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#100d18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mi biblioteca</title>
+
+<style>
+:root {
+  --bg:#100d18; --panel:#1b1627; --panel2:#292039;
+  --text:#f7f3ff; --muted:#b5a9c9; --line:#403052;
+  --accent:#bd8cff; --accent2:#8d5ce6; --danger:#ff829d;
+}
+* { box-sizing:border-box; }
+[hidden] { display:none!important; }
+html { background:var(--bg); }
+body {
+  margin:0; min-height:100vh; min-height:100dvh;
+  background:radial-gradient(ellipse at top right,#47276a55,transparent 42%),var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.5;
+}
+body.light {
+  color-scheme:light;
+  --bg:#f7f3fc; --panel:#fff; --panel2:#eee5f9;
+  --text:#251a35; --muted:#70627f; --line:#e1d5ef;
+  --accent:#8550c9; --accent2:#a16ce0; --danger:#bd355b;
+}
+button,input { font:inherit; }
+button {
+  min-height:42px; padding:10px 13px;
+  border:1px solid var(--line); border-radius:12px;
+  background:var(--panel2); color:var(--text); cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+button:disabled { opacity:.35; }
+button.primary,.upload.primary {
+  color:#180e26;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-color:transparent; font-weight:700;
+}
+button.danger { color:var(--danger); }
+header {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px; padding:22px 18px; max-width:1050px; margin:auto;
+}
+header h1 { margin:0; font-size:27px; letter-spacing:-.8px; }
+header h1 span { color:var(--accent); }
+.subtitle { color:var(--muted); font-size:10px; letter-spacing:1.7px; }
+main { max-width:1050px; padding:0 14px 20px; margin:auto; }
+.card {
+  padding:18px; margin-bottom:15px; background:var(--panel);
+  border:1px solid var(--line); border-radius:19px;
+  box-shadow:0 12px 32px #0002; min-width:0;
+}
+h2 { margin:0 0 8px; font-size:18px; }
+p { margin-top:6px; margin-bottom:12px; }
+.muted { color:var(--muted); font-size:13px; }
+.row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.between { justify-content:space-between; }
+.upload {
+  position:relative; display:flex; justify-content:center; align-items:center;
+  width:100%; min-height:48px; padding:12px; border-radius:12px;
+  cursor:pointer; text-align:center;
+}
+.upload input {
+  position:absolute; inset:0; width:100%; height:100%;
+  opacity:0; cursor:pointer;
+}
+.book-list {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;
+}
+.book {
+  min-width:0; padding:10px; background:var(--panel2);
+  border:1px solid var(--line); border-radius:14px;
+}
+.cover {
+  display:grid; place-items:center; height:115px; margin-bottom:9px;
+  border-radius:9px; background:linear-gradient(145deg,#322044,#8b5bc0);
+  color:white; font-size:38px;
+}
+.book-name { font-size:13px; font-weight:700; overflow-wrap:anywhere; }
+.book-meta { margin:5px 0 9px; color:var(--muted); font-size:11px; }
+.book-actions { display:flex; gap:6px; }
+.book-actions button { flex:1; min-width:0; padding:8px 5px; font-size:12px; }
+input[type=number] {
+  width:76px; background:var(--bg); color:var(--text);
+  border:1px solid var(--line); padding:10px; border-radius:10px;
+}
+progress { width:100%; height:6px; accent-color:var(--accent); }
+#reader { width:100%; min-height:150px; margin:12px 0; overflow:auto;
+  border-radius:10px; background:#28232f; overscroll-behavior:contain;
+  touch-action:pan-y; }
+#paper {
+  width:100%; display:flex; justify-content:center;
+  transform-style:preserve-3d; perspective:1200px;
+}
+#pdfCanvas { display:block; width:100%; height:auto; max-width:100%; background:white; }
+#paper.slide { animation:slidePage .25s ease; }
+#paper.flip-next { transform-origin:right center; animation:turnRightToLeft .48s ease-in-out; }
+#paper.flip-prev { transform-origin:left center; animation:turnLeftToRight .48s ease-in-out; }
+
+@keyframes slidePage {
+  from { opacity:.35; transform:translateX(20px); }
+  to { opacity:1; transform:translateX(0); }
+}
+@keyframes turnRightToLeft {
+  0% { transform:perspective(1200px) rotateY(-72deg); filter:brightness(.65); }
+  55% { transform:perspective(1200px) rotateY(9deg); filter:brightness(.92); }
+  100% { transform:perspective(1200px) rotateY(0); filter:brightness(1); }
+}
+@keyframes turnLeftToRight {
+  0% { transform:perspective(1200px) rotateY(72deg); filter:brightness(.65); }
+  55% { transform:perspective(1200px) rotateY(-9deg); filter:brightness(.92); }
+  100% { transform:perspective(1200px) rotateY(0); filter:brightness(1); }
+}
+.reader-tools { display:grid; gap:10px; }
+.reader-tools .row > button { flex:1; }
+.bookmark-item {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:10px; padding:11px 0; border-bottom:1px solid var(--line);
+}
+.bookmark-item span { min-width:0; overflow-wrap:anywhere; }
+#message { white-space:pre-wrap; overflow-wrap:anywhere; }
+footer { color:var(--muted); text-align:center; font-size:11px; padding:10px 20px 30px; }
+
+/* Estante de libros terminados */
+.finished-shelf {
+  padding:8px 4px 14px;
+  border-bottom:10px solid #76513b;
+  border-radius:3px;
+  background:linear-gradient(180deg,transparent 85%,#76513b15 85%);
+}
+.finished-shelf .book {
+  border-radius:5px 12px 12px 5px;
+  border-left:5px solid var(--accent);
+  box-shadow:inset 3px 0 #ffffff20,0 4px 0 #4d3440;
+}
+.finished-shelf .cover {
+  background:linear-gradient(90deg,#442653,#9361bb,#57316f);
+}
+.finished-shelf .book-meta::before { content:"✓ "; color:var(--accent); font-weight:bold; }
+
+/* Pantalla completa */
+#readerCard.reader-fullscreen {
+  position:fixed; inset:0; z-index:9999;
+  width:100%; height:100vh; height:100dvh;
+  margin:0; padding:max(10px,env(safe-area-inset-top)) 8px max(10px,env(safe-area-inset-bottom));
+  border:0; border-radius:0; display:flex; flex-direction:column;
+  gap:7px; overflow:hidden; background:var(--bg); box-shadow:none;
+}
+#readerCard.reader-fullscreen .reader-heading { flex-shrink:0; }
+#readerCard.reader-fullscreen #reader {
+  flex:1; min-height:0; height:auto; margin:0;
+  display:flex; align-items:center; justify-content:center; overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#readerCard.reader-fullscreen #paper { width:100%; flex-shrink:0; }
+#readerCard.reader-fullscreen #pdfCanvas { max-width:100%; height:auto; object-fit:contain; }
+#readerCard.reader-fullscreen #fullscreenBtn {
+  position:fixed; right:12px; bottom:max(14px,env(safe-area-inset-bottom));
+  z-index:10001; width:46px; height:46px; padding:0;
+  border-radius:50%; background:var(--panel2); box-shadow:0 4px 18px #0005;
+}
+#readerCard.reader-fullscreen .is-hidden { display:none!important; }
+
+@media(min-width:600px) {
+  .book-list { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .cover { height:145px; }
+  #readerCard.reader-fullscreen { padding-left:18px; padding-right:18px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+}
+</style>
 </head>
 
 <body>
-  <header id="appHeader">
-    <div>
-      <h1>Mi <span>biblioteca</span></h1>
-      <div class="subtitle">TU ESPACIO PERSONAL DE LECTURA</div>
+<header id="appHeader">
+  <div>
+    <h1>Mi <span>biblioteca</span></h1>
+    <div class="subtitle">TU ESPACIO PERSONAL DE LECTURA</div>
+  </div>
+  <button id="themeBtn" aria-label="Cambiar tema">☾</button>
+</header>
+
+<main id="appMain">
+  <section class="card">
+    <h2>Tu universo de libros</h2>
+    <p class="muted">Tus historias favoritas, reunidas en un solo lugar.</p>
+    <label class="upload primary">
+      ＋ Importar PDF
+      <input id="fileInput" type="file" accept=".pdf,application/pdf">
+    </label>
+    <p id="message" class="muted" role="status" aria-live="polite">Preparando tu biblioteca…</p>
+  </section>
+
+  <section class="card">
+    <div class="row between">
+      <h2>Mi colección</h2>
+      <span class="muted" id="bookCount">0 libros</span>
     </div>
-    <button id="themeBtn" aria-label="Cambiar tema">☾</button>
-  </header>
+    <div id="bookList" class="book-list"></div>
+    <p id="emptyLibrary" class="muted">Todavía no tenés libros guardados.</p>
+  </section>
 
-  <main id="appMain">
-    <section class="card">
-      <h2>Tu universo de libros</h2>
-      <p class="muted">
-        Tus historias favoritas, reunidas en un solo lugar.
-      </p>
-      <label class="upload primary">
-        ＋ Importar PDF
-        <input id="fileInput" type="file" accept=".pdf,application/pdf">
-      </label>
-      <p id="message" class="muted" role="status" aria-live="polite">
-        Importá tu primer libro para comenzar.
-      </p>
-    </section>
+  <section class="card" id="finishedSection">
+    <div class="row between">
+      <h2>📚 Estante de terminados</h2>
+      <span class="muted" id="finishedCount">0 libros</span>
+    </div>
+    <div id="finishedList" class="book-list finished-shelf"></div>
+    <p id="emptyFinished" class="muted">Tus libros terminados aparecerán aquí.</p>
+  </section>
 
-    <section class="card">
-      <div class="row between">
-        <h2>Mi colección</h2>
-        <span class="muted" id="bookCount">0 libros</span>
+  <section class="card" id="readerCard" hidden>
+    <div class="reader-heading" id="readerHeading">
+      <div>
+        <h2 id="readerTitle">Leyendo</h2>
+        <p id="pageInfo" class="muted">Página 1</p>
       </div>
-      <div id="bookList" class="book-list"></div>
-      <p id="emptyLibrary" class="muted">
-        Todavía no tenés libros guardados.
-      </p>
-    </section>
+      <button id="closeReader">Cerrar ✕</button>
+    </div>
 
-    <section class="card" id="readerCard" hidden>
-      <div class="reader-heading" id="readerHeading">
-        <div>
-          <h2 id="readerTitle">Leyendo</h2>
-          <p id="pageInfo" class="muted">Página 1</p>
-        </div>
-        <button id="closeReader">Cerrar ✕</button>
+    <button id="fullscreenBtn">⛶ Pantalla completa</button>
+    <progress id="progress" value="0" max="100"></progress>
+
+    <div id="reader" aria-label="Página del libro">
+      <div id="paper"><canvas id="pdfCanvas"></canvas></div>
+    </div>
+
+    <div class="reader-tools" id="readerTools">
+      <div class="row">
+        <button id="prevBtn">← Anterior</button>
+        <button id="nextBtn" class="primary">Siguiente →</button>
       </div>
-
-      <button id="fullscreenBtn" class="fullscreen-toggle">
-        ⛶ Pantalla completa
-      </button>
-
-      <progress id="progress" value="0" max="100"></progress>
-
-      <div id="reader" aria-label="Página del libro">
-        <div id="paper">
-          <canvas id="pdfCanvas"></canvas>
-        </div>
+      <div class="row">
+        <label for="pageNumber" class="muted">Ir a página:</label>
+        <input id="pageNumber" type="number" min="1" value="1">
+        <button id="goBtn">Ir</button>
       </div>
-
-      <div class="reader-tools" id="readerTools">
-        <div class="row">
-          <button id="prevBtn">← Anterior</button>
-          <button id="nextBtn" class="primary">Siguiente →</button>
-        </div>
-
-        <div class="row">
-          <label for="pageNumber" class="muted">Ir a página:</label>
-          <input id="pageNumber" type="number" min="1" value="1">
-          <button id="goBtn">Ir</button>
-        </div>
-
-        <div class="row">
-          <button id="slideBtn">Deslizamiento</button>
-          <button id="flipBtn">Efecto de página</button>
-        </div>
-
-        <div class="row">
-          <button id="markBtn" class="primary">☆ Guardar marcador</button>
-        </div>
+      <div class="row">
+        <button id="slideBtn">Deslizamiento</button>
+        <button id="flipBtn">Efecto de página</button>
       </div>
-    </section>
-
-    <section class="card" id="marksCard">
-      <h2>Mis marcadores</h2>
-      <div id="marks">
-        <p class="muted">Las páginas que guardes aparecerán aquí.</p>
+      <div class="row">
+        <button id="markBtn" class="primary">☆ Guardar marcador</button>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="card" id="aboutCard">
-      <h2>Sobre tu biblioteca</h2>
-      <p class="muted">
-        Los libros y el progreso se guardan en este navegador.
-        No se suben a una cuenta ni se sincronizan automáticamente
-        con otros dispositivos. Conservá copias de tus PDF originales.
-      </p>
-    </section>
-  </main>
+  <section class="card">
+    <h2>Mis marcadores</h2>
+    <div id="marks"><p class="muted">Las páginas que guardes aparecerán aquí.</p></div>
+  </section>
 
-  <footer id="appFooter">MI BIBLIOTECA · Hecho para disfrutar la lectura 💜</footer>
+  <section class="card">
+    <h2>Sobre tu biblioteca</h2>
+    <p class="muted">Tus libros se guardan en este navegador. No se suben a una cuenta ni se sincronizan automáticamente con otros dispositivos. Conservá copias de tus PDF originales.</p>
+  </section>
+</main>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<footer>MI BIBLIOTECA · Hecho para disfrutar la lectura 💜</footer>
 
-  <script>
-    (() => {
-      'use strict';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(() => {
+  'use strict';
 
-      const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(id);
+  const DB_NAME = 'mi-biblioteca-db';
+  const STORE = 'books';
 
-      const DB_NAME = 'mi-biblioteca-db';
-      const STORE = 'books';
+  let db, currentBook = null, pdfDoc = null;
+  let currentPage = 1, totalPages = 0;
+  let animationMode = 'flip', turnDirection = 'next';
+  let renderTask = null, renderToken = 0;
+  let controlsVisible = true, suppressTap = false;
+  let touchX = null, touchY = null;
 
-      let db;
-      let currentBook = null;
-      let pdfDoc = null;
-      let currentPage = 1;
-      let totalPages = 0;
-      let animationMode = 'slide';
-      let renderTask = null;
-      let renderToken = 0;
-      let controlsVisible = true;
-      let suppressTap = false;
-      let touchX = null;
-      let touchY = null;
+  function message(text) { $('message').textContent = text; }
 
-      const message = text => {
-        $('message').textContent = text;
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains(STORE)) {
+          request.result.createObjectStore(STORE, {keyPath:'id'});
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function getBook(id) {
+    return new Promise((resolve, reject) => {
+      const request = db.transaction(STORE).objectStore(STORE).get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function getAllBooks() {
+    return new Promise((resolve, reject) => {
+      const request = db.transaction(STORE).objectStore(STORE).getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function putBook(book) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(book);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  }
+
+  function deleteBook(id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  function makeId(file) {
+    return `${file.name}_${file.size}_${file.lastModified}`;
+  }
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[ch]);
+  }
+
+  function createBookCard(book, finished) {
+    const card = document.createElement('article');
+    card.className = 'book';
+    card.innerHTML = `
+      <div class="cover"><span>${finished ? '📚' : '📖'}</span></div>
+      <div class="book-name">${escapeHTML(book.name)}</div>
+      <div class="book-meta">${finished ? 'Terminado' : 'En lectura'} · ${book.totalPages || 'PDF'} páginas</div>
+      <div class="book-actions">
+        <button class="open-book">Leer</button>
+        <button class="delete-book danger" aria-label="Eliminar libro">×</button>
+      </div>`;
+
+    card.querySelector('.open-book').addEventListener('click', () => openBook(book.id));
+    card.querySelector('.delete-book').addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar "${book.name}" de tu biblioteca?`)) return;
+      if (currentBook && currentBook.id === book.id) closeReader();
+      await deleteBook(book.id);
+      await refreshLibrary();
+      await refreshMarks();
+      message('Libro eliminado de tu biblioteca.');
+    });
+    return card;
+  }
+
+  async function refreshLibrary() {
+    const books = await getAllBooks();
+    const active = books.filter(book => !book.finished);
+    const finished = books.filter(book => book.finished);
+    $('bookCount').textContent = `${active.length} ${active.length === 1 ? 'libro' : 'libros'}`;
+    $('finishedCount').textContent = `${finished.length} ${finished.length === 1 ? 'libro' : 'libros'}`;
+    $('emptyLibrary').hidden = active.length > 0;
+    $('emptyFinished').hidden = finished.length > 0;
+    $('emptyLibrary').textContent = books.length
+      ? '¡Todos tus libros están terminados! Mirá tu estante.'
+      : 'Todavía no tenés libros guardados.';
+
+    $('bookList').replaceChildren();
+    $('finishedList').replaceChildren();
+    books.sort((a,b) => (b.addedAt || 0) - (a.addedAt || 0));
+
+    active.forEach(book => $('bookList').appendChild(createBookCard(book, false)));
+    finished.forEach(book => $('finishedList').appendChild(createBookCard(book, true)));
+  }
+
+  async function importPDF(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      message('Elegí un archivo PDF válido.');
+      return;
+    }
+    if (!file.size) {
+      message('El archivo está vacío.');
+      return;
+    }
+
+    message('Importando PDF…');
+    try {
+      const buffer = await file.arrayBuffer();
+      const signature = new TextDecoder().decode(new Uint8Array(buffer, 0, Math.min(5, buffer.byteLength)));
+      if (!signature.startsWith('%PDF-')) throw new Error('El archivo no parece ser un PDF válido.');
+
+      const id = makeId(file);
+      const existing = await getBook(id);
+      const book = {
+        id, name:file.name, size:file.size, addedAt:existing?.addedAt || Date.now(),
+        data:buffer, currentPage:existing?.currentPage || 1,
+        totalPages:existing?.totalPages || 0, marks:existing?.marks || [],
+        finished:existing?.finished || false
       };
 
-      function openDatabase() {
-        return new Promise((resolve, reject) => {
-          const request = indexedDB.open(DB_NAME, 1);
+      await putBook(book);
+      await refreshLibrary();
+      await openBook(id);
+      message('PDF guardado en tu biblioteca.');
+    } catch (error) {
+      console.error(error);
+      message('No se pudo importar el PDF. Comprobá el archivo y el espacio disponible.\n' + (error.message || ''));
+    }
+  }
 
-          request.onupgradeneeded = () => {
-            const database = request.result;
-
-            if (!database.objectStoreNames.contains(STORE)) {
-              database.createObjectStore(STORE, { keyPath: 'id' });
-            }
-          };
-
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
+  async function openBook(id) {
+    try {
+      const book = await getBook(id);
+      if (!book) {
+        message('No se encontró ese libro.');
+        return;
       }
 
-      function getBook(id) {
-        return new Promise((resolve, reject) => {
-          const request = db.transaction(STORE)
-            .objectStore(STORE).get(id);
-
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
+      message('Abriendo libro…');
+      if (renderTask) {
+        try { renderTask.cancel(); } catch (_) {}
+        renderTask = null;
+      }
+      if (pdfDoc) {
+        try { await pdfDoc.destroy(); } catch (_) {}
       }
 
-      function getAllBooks() {
-        return new Promise((resolve, reject) => {
-          const request = db.transaction(STORE)
-            .objectStore(STORE).getAll();
+      currentBook = book;
+      const loadingTask = pdfjsLib.getDocument({data:new Uint8Array(book.data.slice(0))});
+      pdfDoc = await loadingTask.promise;
+      totalPages = pdfDoc.numPages;
+      currentPage = Math.min(Math.max(1, book.currentPage || 1), totalPages);
 
-          request.onsuccess = () => resolve(request.result || []);
-          request.onerror = () => reject(request.error);
-        });
+      currentBook.totalPages = totalPages;
+      currentBook.currentPage = currentPage;
+      await putBook(currentBook);
+
+      $('readerTitle').textContent = book.name;
+      $('readerCard').hidden = false;
+      $('pageNumber').max = totalPages;
+      exitFullscreenMode(false);
+      controlsVisible = true;
+      updateControls();
+
+      await renderPage();
+      await refreshLibrary();
+      await refreshMarks();
+      $('readerCard').scrollIntoView({behavior:'smooth', block:'start'});
+      message('Libro listo para leer.');
+    } catch (error) {
+      console.error(error);
+      message('No se pudo abrir el PDF. Probá importarlo nuevamente.');
+    }
+  }
+
+  async function renderPage() {
+    if (!pdfDoc || !currentBook) return;
+    const token = ++renderToken;
+
+    if (renderTask) {
+      try { renderTask.cancel(); } catch (_) {}
+      renderTask = null;
+    }
+
+    try {
+      const page = await pdfDoc.getPage(currentPage);
+      if (token !== renderToken) return;
+
+      const holder = $('reader');
+      const base = page.getViewport({scale:1});
+      const fullscreen = $('readerCard').classList.contains('reader-fullscreen');
+      const maxWidth = Math.max(200, holder.clientWidth - 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let scale = maxWidth / base.width;
+
+      if (fullscreen && holder.clientHeight > 100) {
+        scale = Math.min(scale, (holder.clientHeight - 4) / base.height);
       }
+      scale = Math.min(scale, 2);
 
-      function putBook(book) {
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE, 'readwrite');
-          tx.objectStore(STORE).put(book);
+      const viewport = page.getViewport({scale:scale * dpr});
+      const canvas = $('pdfCanvas');
+      const context = canvas.getContext('2d', {alpha:false});
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
+      canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
 
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-          tx.onabort = () => reject(tx.error);
-        });
+      renderTask = page.render({canvasContext:context, viewport});
+      await renderTask.promise;
+      if (token !== renderToken) return;
+      renderTask = null;
+
+      const paper = $('paper');
+      paper.classList.remove('slide','flip-next','flip-prev');
+      void paper.offsetWidth;
+      paper.classList.add(animationMode === 'flip'
+        ? (turnDirection === 'next' ? 'flip-next' : 'flip-prev')
+        : 'slide');
+
+      $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+      $('pageNumber').value = currentPage;
+      $('progress').value = currentPage / totalPages * 100;
+      $('prevBtn').disabled = currentPage <= 1;
+      $('nextBtn').disabled = currentPage >= totalPages;
+
+      currentBook.currentPage = currentPage;
+      currentBook.totalPages = totalPages;
+
+      const justFinished = currentPage >= totalPages && !currentBook.finished;
+      if (justFinished) currentBook.finished = true;
+
+      await putBook(currentBook);
+
+      if (justFinished) {
+        await refreshLibrary();
+        message('¡Terminaste el libro! 📚 Ya está en tu estante.');
       }
-
-      function deleteBook(id) {
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(STORE, 'readwrite');
-          tx.objectStore(STORE).delete(id);
-
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-        });
+    } catch (error) {
+      if (error?.name !== 'RenderingCancelledException') {
+        console.error(error);
+        message('No se pudo mostrar esta página.');
       }
+    }
+  }
 
-      function makeId(file) {
-        return `${file.name}_${file.size}_${file.lastModified}`;
+  async function goToPage(value) {
+    if (!pdfDoc) return;
+    const next = Math.floor(Number(value));
+    if (!Number.isFinite(next) || next < 1 || next > totalPages) {
+      message(`Ingresá una página entre 1 y ${totalPages}.`);
+      return;
+    }
+    turnDirection = next > currentPage ? 'next' : 'prev';
+    currentPage = next;
+    await renderPage();
+  }
+
+  function updateControls() {
+    const fullscreen = $('readerCard').classList.contains('reader-fullscreen');
+    $('readerHeading').classList.toggle('is-hidden', fullscreen && !controlsVisible);
+    $('readerTools').classList.toggle('is-hidden', fullscreen && !controlsVisible);
+    $('progress').classList.toggle('is-hidden', fullscreen && !controlsVisible);
+    $('fullscreenBtn').textContent = fullscreen
+      ? (controlsVisible ? '×' : '☰')
+      : '⛶ Pantalla completa';
+    $('fullscreenBtn').setAttribute('aria-label', fullscreen
+      ? (controlsVisible ? 'Ocultar controles' : 'Mostrar controles')
+      : 'Entrar en pantalla completa');
+  }
+
+  async function enterFullscreenMode() {
+    if (!currentBook) return;
+    $('readerCard').classList.add('reader-fullscreen');
+    document.body.style.overflow = 'hidden';
+    controlsVisible = true;
+    updateControls();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await renderPage();
+
+    try {
+      if ($('readerCard').requestFullscreen && !document.fullscreenElement) {
+        await $('readerCard').requestFullscreen();
       }
-
-      function escapeHTML(value) {
-        return String(value).replace(/[&<>"']/g, ch => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        })[ch]);
-      }
-
-      async function refreshLibrary() {
-        const books = await getAllBooks();
-
-        $('bookCount').textContent =
-          `${books.length} ${books.length === 1 ? 'libro' : 'libros'}`;
-
-        $('emptyLibrary').hidden = books.length > 0;
-        $('bookList').replaceChildren();
-
-        books.sort((a, b) => b.addedAt - a.addedAt);
-
-        for (const book of books) {
-          const card = document.createElement('article');
-          card.className = 'book';
-
-          card.innerHTML = `
-            <div class="cover"><span>▤</span></div>
-            <div class="book-name">${escapeHTML(book.name)}</div>
-            <div class="book-meta">
-              ${book.totalPages || 'PDF'} páginas ·
-              ${Math.round(book.size / 1024)} KB
-            </div>
-            <div class="book-actions">
-              <button class="open-book">Leer</button>
-              <button class="delete-book danger"
-                aria-label="Eliminar libro">×</button>
-            </div>
-          `;
-
-          card.querySelector('.open-book').addEventListener('click', () => {
-            openBook(book.id);
-          });
-
-          card.querySelector('.delete-book').addEventListener('click', async () => {
-            if (!confirm(`¿Eliminar "${book.name}" de tu biblioteca?`)) return;
-
-            if (currentBook && currentBook.id === book.id) {
-              closeReader();
-            }
-
-            await deleteBook(book.id);
-            await refreshLibrary();
-            await refreshMarks();
-            message('Libro eliminado de tu biblioteca.');
-          });
-
-          $('bookList').appendChild(card);
-        }
-      }
-
-      async function importPDF(file) {
-        if (!file) return;
-
-        if (!file.name.toLowerCase().endsWith('.pdf') &&
-            file.type !== 'application/pdf') {
-          message('Elegí un archivo PDF válido.');
-          return;
-        }
-
-        if (file.size === 0) {
-          message('El archivo está vacío.');
-          return;
-        }
-
-        message('Importando PDF…');
-
-        try {
-          const buffer = await file.arrayBuffer();
-
-          const signature = new TextDecoder().decode(
-            new Uint8Array(buffer, 0, Math.min(5, buffer.byteLength))
-          );
-
-          if (!signature.startsWith('%PDF-')) {
-            throw new Error('El archivo no parece ser un PDF válido.');
-          }
-
-          const id = makeId(file);
-          const existing = await getBook(id);
-
-          const book = {
-            id,
-            name: file.name,
-            size: file.size,
-            addedAt: existing?.addedAt || Date.now(),
-            data: buffer,
-            currentPage: existing?.currentPage || 1,
-            totalPages: existing?.totalPages || 0,
-            marks: existing?.marks || []
-          };
-
-          await putBook(book);
-          await refreshLibrary();
-          await openBook(id);
-          message('PDF guardado en tu biblioteca.');
-        } catch (error) {
-          console.error(error);
-          message(
-            'No se pudo importar el PDF. Comprobá que el archivo sea válido ' +
-            'y que el navegador tenga espacio disponible.\n' +
-            (error.message || '')
-          );
-        }
-      }
-
-      async function openBook(id) {
-        try {
-          const book = await getBook(id);
-
-          if (!book) {
-            message('No se encontró ese libro.');
-            return;
-          }
-
-          message('Abriendo libro…');
-
-          if (renderTask) {
-            try { renderTask.cancel(); } catch (_) {}
-            renderTask = null;
-          }
-
-          if (pdfDoc) {
-            try { await pdfDoc.destroy(); } catch (_) {}
-          }
-
-          currentBook = book;
-
-          const loadingTask = pdfjsLib.getDocument({
-            data: new Uint8Array(book.data.slice(0))
-          });
-
-          pdfDoc = await loadingTask.promise;
-          totalPages = pdfDoc.numPages;
-          currentPage = Math.min(
-            Math.max(1, book.currentPage || 1), totalPages
-          );
-
-          currentBook.totalPages = totalPages;
-          currentBook.currentPage = currentPage;
-          await putBook(currentBook);
-
-          $('readerTitle').textContent = book.name;
-          $('readerCard').hidden = false;
-          $('pageNumber').max = totalPages;
-
-          exitFullscreenMode(false);
-          controlsVisible = true;
-          updateControls();
-
-          await renderPage();
-          await refreshLibrary();
-          await refreshMarks();
-
-          $('readerCard').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-
-          message('Libro listo para leer.');
-        } catch (error) {
-          console.error(error);
-          message('No se pudo abrir el PDF. Probá importarlo nuevamente.');
-        }
-      }
-
-      async function renderPage() {
-        if (!pdfDoc || !currentBook) return;
-
-        const token = ++renderToken;
-
-        if (renderTask) {
-          try { renderTask.cancel(); } catch (_) {}
-          renderTask = null;
-        }
-
-        try {
-          const page = await pdfDoc.getPage(currentPage);
-          if (token !== renderToken) return;
-
-          const holder = $('reader');
-          const base = page.getViewport({ scale: 1 });
-
-          const fullscreen = $('readerCard').classList.contains('reader-fullscreen');
-          const maxWidth = Math.max(200, holder.clientWidth - 2);
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-          let scale = maxWidth / base.width;
-
-          if (fullscreen && holder.clientHeight > 100) {
-            const maxHeight = holder.clientHeight - 4;
-            scale = Math.min(scale, maxHeight / base.height);
-          }
-
-          scale = Math.min(scale, 2);
-
-          const viewport = page.getViewport({ scale: scale * dpr });
-          const canvas = $('pdfCanvas');
-          const context = canvas.getContext('2d', { alpha: false });
-
-          canvas.width = Math.floor(viewport.width);
-          canvas.height = Math.floor(viewport.height);
-          canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
-          canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
-
-          renderTask = page.render({
-            canvasContext: context,
-            viewport
-          });
-
-          await renderTask.promise;
-          if (token !== renderToken) return;
-
-          renderTask = null;
-
-          $('paper').classList.remove('slide', 'flip');
-          void $('paper').offsetWidth;
-          $('paper').classList.add(animationMode);
-
-          $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
-          $('pageNumber').value = currentPage;
-          $('progress').value = currentPage / totalPages * 100;
-          $('prevBtn').disabled = currentPage <= 1;
-          $('nextBtn').disabled = currentPage >= totalPages;
-
-          currentBook.currentPage = currentPage;
-          currentBook.totalPages = totalPages;
-          await putBook(currentBook);
-        } catch (error) {
-          if (error?.name !== 'RenderingCancelledException') {
-            console.error(error);
-            message('No se pudo mostrar esta página.');
-          }
-        }
-      }
-
-      async function goToPage(pageNumber) {
-        if (!pdfDoc) return;
-
-        const next = Math.floor(Number(pageNumber));
-
-        if (!Number.isFinite(next) || next < 1 || next > totalPages) {
-          message(`Ingresá una página entre 1 y ${totalPages}.`);
-          return;
-        }
-
-        currentPage = next;
-        await renderPage();
-      }
-
-      function updateControls() {
-        const fullscreen = $('readerCard').classList.contains('reader-fullscreen');
-
-        $('readerHeading').classList.toggle('is-hidden', fullscreen && !controlsVisible);
-        $('readerTools').classList.toggle('is-hidden', fullscreen && !controlsVisible);
-        $('progress').classList.toggle('is-hidden', fullscreen && !controlsVisible);
-
-        $('fullscreenBtn').textContent = fullscreen
-          ? (controlsVisible ? '×' : '☰')
-          : '⛶ Pantalla completa';
-
-        $('fullscreenBtn').setAttribute(
-          'aria-label',
-          fullscreen
-            ? (controlsVisible ? 'Ocultar controles' : 'Mostrar controles')
-            : 'Entrar en pantalla completa'
-        );
-      }
-
-      async function enterFullscreenMode() {
-        if (!currentBook) return;
-
-        $('readerCard').classList.add('reader-fullscreen');
-        document.body.style.overflow = 'hidden';
-        controlsVisible = true;
-        updateControls();
-
-        // Esperamos al nuevo tamaño antes de dibujar la página.
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        await renderPage();
-
-        // Algunos navegadores permiten pantalla completa nativa.
-        // El diseño fijo también funciona cuando no está disponible.
-        try {
-          if (
-            $('readerCard').requestFullscreen &&
-            !document.fullscreenElement
-          ) {
-            await $('readerCard').requestFullscreen();
-          }
-        } catch (_) {
-          // Se mantiene el modo de lectura visual.
-        }
-      }
-
-      function exitFullscreenMode(restoreScroll = true) {
-        const wasFullscreen =
-          $('readerCard').classList.contains('reader-fullscreen');
-
-        $('readerCard').classList.remove('reader-fullscreen');
-        document.body.style.overflow = '';
-        controlsVisible = true;
-        updateControls();
-
-        if (document.fullscreenElement && document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        }
-
-        if (wasFullscreen && pdfDoc) {
-          requestAnimationFrame(() => renderPage());
-        }
-
-        if (restoreScroll && wasFullscreen) {
-          $('readerCard').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      }
-
-      function toggleFullscreen() {
-        const fullscreen =
-          $('readerCard').classList.contains('reader-fullscreen');
-
-        if (fullscreen) {
-          controlsVisible = !controlsVisible;
-          updateControls();
-        } else {
-          enterFullscreenMode();
-        }
-      }
-
-      function closeReader() {
-        renderToken++;
-
-        if (renderTask) {
-          try { renderTask.cancel(); } catch (_) {}
-          renderTask = null;
-        }
-
-        exitFullscreenMode(false);
-
-        if (pdfDoc) {
-          pdfDoc.destroy().catch(() => {});
-        }
-
-        pdfDoc = null;
-        currentBook = null;
-        totalPages = 0;
-        $('readerCard').hidden = true;
-      }
-
-      async function saveBookmark() {
-        if (!currentBook) {
-          message('Primero abrí un libro.');
-          return;
-        }
-
-        const marks = currentBook.marks || [];
-
-        if (marks.some(mark => mark.page === currentPage)) {
-          message('Esta página ya tiene un marcador.');
-          return;
-        }
-
-        marks.push({
-          page: currentPage,
-          createdAt: Date.now()
-        });
-
-        currentBook.marks = marks;
-        await putBook(currentBook);
-        await refreshMarks();
-        message(`Marcador guardado en la página ${currentPage}.`);
-      }
-
-      async function refreshMarks() {
-        const books = await getAllBooks();
-        const list = [];
-
-        books.forEach(book => {
-          (book.marks || []).forEach(mark => {
-            list.push({
-              bookId: book.id,
-              name: book.name,
-              page: mark.page
-            });
-          });
-        });
-
-        $('marks').replaceChildren();
-
-        if (!list.length) {
-          const p = document.createElement('p');
-          p.className = 'muted';
-          p.textContent = 'Las páginas que guardes aparecerán aquí.';
-          $('marks').appendChild(p);
-          return;
-        }
-
-        list.forEach(mark => {
-          const row = document.createElement('div');
-          row.className = 'bookmark-item';
-
-          const label = document.createElement('span');
-          label.textContent = `${mark.name} · Página ${mark.page}`;
-
-          const button = document.createElement('button');
-          button.textContent = 'Abrir';
-          button.addEventListener('click', async () => {
-            await openBook(mark.bookId);
-            await goToPage(mark.page);
-          });
-
-          row.append(label, button);
-          $('marks').appendChild(row);
-        });
-      }
-
-      $('fileInput').addEventListener('change', async event => {
-        const file = event.target.files?.[0];
-        await importPDF(file);
-        event.target.value = '';
+    } catch (_) {}
+  }
+
+  function exitFullscreenMode() {
+    const wasFullscreen = $('readerCard').classList.contains('reader-fullscreen');
+    $('readerCard').classList.remove('reader-fullscreen');
+    document.body.style.overflow = '';
+    controlsVisible = true;
+    updateControls();
+
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+    if (wasFullscreen && pdfDoc) requestAnimationFrame(() => renderPage());
+  }
+
+  function toggleFullscreen() {
+    if (!$('readerCard').classList.contains('reader-fullscreen')) {
+      enterFullscreenMode();
+    } else {
+      controlsVisible = !controlsVisible;
+      updateControls();
+      requestAnimationFrame(() => renderPage());
+    }
+  }
+
+  function closeReader() {
+    renderToken++;
+    if (renderTask) {
+      try { renderTask.cancel(); } catch (_) {}
+      renderTask = null;
+    }
+    exitFullscreenMode();
+    if (pdfDoc) pdfDoc.destroy().catch(() => {});
+    pdfDoc = null;
+    currentBook = null;
+    totalPages = 0;
+    $('readerCard').hidden = true;
+  }
+
+  async function saveBookmark() {
+    if (!currentBook) {
+      message('Primero abrí un libro.');
+      return;
+    }
+    const marks = currentBook.marks || [];
+    if (marks.some(mark => mark.page === currentPage)) {
+      message('Esta página ya tiene un marcador.');
+      return;
+    }
+    marks.push({page:currentPage, createdAt:Date.now()});
+    currentBook.marks = marks;
+    await putBook(currentBook);
+    await refreshMarks();
+    message(`Marcador guardado en la página ${currentPage}.`);
+  }
+
+  async function refreshMarks() {
+    const books = await getAllBooks();
+    const list = [];
+    books.forEach(book => (book.marks || []).forEach(mark => {
+      list.push({bookId:book.id, name:book.name, page:mark.page});
+    }));
+
+    $('marks').replaceChildren();
+    if (!list.length) {
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.textContent = 'Las páginas que guardes aparecerán aquí.';
+      $('marks').appendChild(p);
+      return;
+    }
+
+    list.forEach(mark => {
+      const row = document.createElement('div');
+      row.className = 'bookmark-item';
+      const label = document.createElement('span');
+      label.textContent = `${mark.name} · Página ${mark.page}`;
+      const button = document.createElement('button');
+      button.textContent = 'Abrir';
+      button.addEventListener('click', async () => {
+        await openBook(mark.bookId);
+        await goToPage(mark.page);
       });
+      row.append(label, button);
+      $('marks').appendChild(row);
+    });
+  }
 
-      $('prevBtn').addEventListener('click', () => {
-        if (currentPage > 1) goToPage(currentPage - 1);
-      });
+  $('fileInput').addEventListener('change', async event => {
+    await importPDF(event.target.files?.[0]);
+    event.target.value = '';
+  });
+  $('prevBtn').addEventListener('click', () => {
+    if (currentPage > 1) goToPage(currentPage - 1);
+  });
+  $('nextBtn').addEventListener('click', () => {
+    if (currentPage < totalPages) goToPage(currentPage + 1);
+  });
+  $('goBtn').addEventListener('click', () => goToPage($('pageNumber').value));
+  $('pageNumber').addEventListener('keydown', event => {
+    if (event.key === 'Enter') goToPage($('pageNumber').value);
+  });
+  $('slideBtn').addEventListener('click', () => {
+    animationMode = 'slide';
+    message('Animación de deslizamiento seleccionada.');
+  });
+  $('flipBtn').addEventListener('click', () => {
+    animationMode = 'flip';
+    message('Efecto de doblado seleccionado.');
+  });
+  $('markBtn').addEventListener('click', saveBookmark);
+  $('closeReader').addEventListener('click', closeReader);
+  $('fullscreenBtn').addEventListener('click', toggleFullscreen);
 
-      $('nextBtn').addEventListener('click', () => {
-        if (currentPage < totalPages) goToPage(currentPage + 1);
-      });
+  $('themeBtn').addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    const light = document.body.classList.contains('light');
+    $('themeBtn').textContent = light ? '☀' : '☾';
+    try { localStorage.setItem('mi-biblioteca-theme', light ? 'light' : 'dark'); } catch (_) {}
+  });
 
-      $('goBtn').addEventListener('click', () => {
-        goToPage($('pageNumber').value);
-      });
+  $('reader').addEventListener('click', event => {
+    if (!currentBook || suppressTap) return;
+    if (!event.target.closest('button,input,label') &&
+        $('readerCard').classList.contains('reader-fullscreen')) {
+      controlsVisible = !controlsVisible;
+      updateControls();
+      requestAnimationFrame(() => renderPage());
+    }
+  });
 
-      $('pageNumber').addEventListener('keydown', event => {
-        if (event.key === 'Enter') goToPage($('pageNumber').value);
-      });
+  $('reader').addEventListener('touchstart', event => {
+    const touch = event.changedTouches[0];
+    touchX = touch.clientX;
+    touchY = touch.clientY;
+  }, {passive:true});
 
-      $('slideBtn').addEventListener('click', () => {
-        animationMode = 'slide';
-        message('Animación de deslizamiento seleccionada.');
-      });
+  $('reader').addEventListener('touchend', event => {
+    if (touchX === null || touchY === null) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchX;
+    const dy = touch.clientY - touchY;
+    touchX = touchY = null;
 
-      $('flipBtn').addEventListener('click', () => {
-        animationMode = 'flip';
-        message('Efecto visual de página seleccionado.');
-      });
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return;
+    suppressTap = true;
 
-      $('markBtn').addEventListener('click', saveBookmark);
-      $('closeReader').addEventListener('click', closeReader);
-      $('fullscreenBtn').addEventListener('click', toggleFullscreen);
+    if (dx < 0 && currentPage < totalPages) goToPage(currentPage + 1);
+    else if (dx > 0 && currentPage > 1) goToPage(currentPage - 1);
 
-      $('themeBtn').addEventListener('click', () => {
-        document.body.classList.toggle('light');
-        const isLight = document.body.classList.contains('light');
+    setTimeout(() => { suppressTap = false; }, 400);
+  }, {passive:true});
 
-        $('themeBtn').textContent = isLight ? '☀' : '☾';
+  window.addEventListener('resize', () => {
+    if (pdfDoc && currentBook) renderPage();
+  });
 
-        try {
-          localStorage.setItem(
-            'mi-biblioteca-theme',
-            isLight ? 'light' : 'dark'
-          );
-        } catch (_) {}
-      });
+  async function init() {
+    try {
+      if (!('indexedDB' in window)) throw new Error('Este navegador no admite el almacenamiento necesario.');
+      db = await openDatabase();
 
-      // Tocar la página del PDF muestra u oculta los controles.
-      $('reader').addEventListener('click', event => {
-        if (!currentBook) return;
-        if (suppressTap) {
-          suppressTap = false;
-          return;
+      try {
+        if (localStorage.getItem('mi-biblioteca-theme') === 'light') {
+          document.body.classList.add('light');
+          $('themeBtn').textContent = '☀';
         }
+      } catch (_) {}
 
-        if (!event.target.closest('button, input, label')) {
-          if ($('readerCard').classList.contains('reader-fullscreen')) {
-            controlsVisible = !controlsVisible;
-            updateControls();
-          }
-        }
-      });
+      await refreshLibrary();
+      await refreshMarks();
+      message('Tu biblioteca está lista. Importá un PDF.');
+    } catch (error) {
+      console.error(error);
+      message('No se pudo iniciar el almacenamiento. Recargá la página o probá otro navegador.');
+    }
+  }
 
-      // Deslizar el dedo cambia de página sin activar el toque de controles.
-      $('reader').addEventListener('touchstart', event => {
-        const touch = event.changedTouches[0];
-        touchX = touch.clientX;
-        touchY = touch.clientY;
-      }, { passive: true });
-
-      $('reader').addEventListener('touchend', event => {
-        if (touchX === null || touchY === null) return;
-
-        const touch = event.changedTouches[0];
-        const diffX = touch.clientX - touchX;
-        const diffY = touch.clientY - touchY;
-
-        touchX = null;
-        touchY = null;
-
-        if (Math.abs(diffX) < 60 || Math.abs(diffX) < Math.abs(diffY)) {
-          return;
-        }
-
-        suppressTap = true;
-
-        if (diffX < 0 && currentPage < totalPages) {
-          goToPage(currentPage + 1);
-        } else if (diffX > 0 && currentPage > 1) {
-          goToPage(currentPage - 1);
-        }
-
-        setTimeout(() => {
-          suppressTap = false;
-        }, 400);
-      }, { passive: true });
-
-      window.addEventListener('resize', () => {
-        if (pdfDoc && currentBook) {
-          renderPage();
-        }
-      });
-
-      document.addEventListener('fullscreenchange', () => {
-        // Si el usuario sale del modo nativo con el navegador,
-        // mantenemos coherente el estado de la interfaz.
-        if (
-          !document.fullscreenElement &&
-          !$('readerCard').classList.contains('reader-fullscreen')
-        ) {
-          document.body.style.overflow = '';
-        }
-      });
-
-      async function init() {
-        try {
-          if (!('indexedDB' in window)) {
-            throw new Error('Este navegador no admite el almacenamiento necesario.');
-          }
-
-          db = await openDatabase();
-
-          if (localStorage.getItem('mi-biblioteca-theme') === 'light') {
-            document.body.classList.add('light');
-            $('themeBtn').textContent = '☀';
-          }
-
-          await refreshLibrary();
-          await refreshMarks();
-          message('Tu biblioteca está lista. Importá un PDF.');
-        } catch (error) {
-          console.error(error);
-          message(
-            'No se pudo iniciar el almacenamiento. Recargá la página o probá otro navegador.'
-          );
-        }
-      }
-
-      if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        init();
-      } else {
-        message(
-          'No se pudo cargar el lector PDF. Revisá tu conexión a internet y recargá.'
-        );
-      }
-    })();
-  </script>
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    init();
+  } else {
+    message('No se pudo cargar el lector PDF. Revisá tu conexión y recargá.');
+  }
+})();
+</script>
 </body>
 </html>
