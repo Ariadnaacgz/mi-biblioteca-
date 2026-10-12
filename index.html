@@ -778,10 +778,10 @@
     let renderToken = 0;
     let closingReader = false;
 
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    }
+    if (
+  !window.pdfjsLib ||
+  !(window.PageFlip || (window.St && window.St.PageFlip))
+) {
 
     function notify(message, duration = 2800) {
       const el = $("toast");
@@ -972,10 +972,10 @@
         return;
       }
 
-      if (!window.pdfjsLib || !window.PageFlip) {
-        notify("No se pudieron cargar las herramientas del lector. Revisá tu conexión.");
-        return;
-      }
+    if (
+  !window.pdfjsLib ||
+  !(window.PageFlip || (window.St && window.St.PageFlip))
+) {
 
       const button = $("importBtn");
       button.disabled = true;
@@ -1333,7 +1333,7 @@
           pdfDocument.numPages - 1
         );
 
-        pageFlip = new PageFlip($("flipbook"), {
+      pageFlip = new (window.PageFlip || window.St.PageFlip)($("flipbook"), {
           width: 420,
           height: 620,
           size: "stretch",
