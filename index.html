@@ -1,1 +1,885 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#100e19">
+  <meta name="description" content="Tu biblioteca personal de libros PDF.">
+  <title>Mi biblioteca</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #100e19;
+      --panel: #1c1929;
+      --panel2: #272238;
+      --text: #f7f3ff;
+      --muted: #aaa2be;
+      --accent: #b39bff;
+      --line: #39324d;
+      --paper: #f7f0df;
+      --ink: #302a25;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at top, #29203f 0, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+
+    body.light {
+      color-scheme: light;
+      --bg: #eeeaf7;
+      --panel: #fff;
+      --panel2: #e5def3;
+      --text: #251c35;
+      --muted: #716781;
+      --accent: #8060d8;
+      --line: #d4c9e8;
+    }
+
+    button, input { font: inherit; }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:disabled {
+      opacity: .4;
+      cursor: default;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #1b142c;
+      border-color: transparent;
+      font-weight: 750;
+    }
+
+    .danger { color: #ff9fae; }
+
+    header {
+      padding: max(22px, env(safe-area-inset-top)) 20px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: -.8px;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      margin-top: 5px;
+    }
+
+    main {
+      width: min(100% - 28px, 780px);
+      margin: auto;
+      padding-bottom: 40px;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 12px 32px #00000012;
+    }
+
+    h2 { font-size: 18px; margin: 0 0 8px; }
+    p { line-height: 1.5; }
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .between { justify-content: space-between; }
+
+    .upload {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    input[type=file] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .book-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .book {
+      min-width: 0;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 12px;
+    }
+
+    .cover {
+      height: 112px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 11px;
+      background: linear-gradient(145deg, #43345f, #171421);
+      color: #d5c7ff;
+    }
+
+    .cover span { font-size: 35px; }
+
+    .book-name {
+      font-size: 13px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+      margin-bottom: 5px;
+    }
+
+    .book-meta {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .book-actions { display: flex; gap: 6px; }
+    .book-actions button { flex: 1; padding: 9px 5px; font-size: 12px; }
+
+    #readerCard[hidden] { display: none; }
+
+    #reader {
+      margin: 18px 0;
+      perspective: 1400px;
+      touch-action: pan-y;
+    }
+
+    #paper {
+      position: relative;
+      transform-origin: left center;
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 5px;
+      overflow: hidden;
+      min-height: 260px;
+      box-shadow: 0 14px 42px #0006;
+    }
+
+    #pdfCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    #paper.slide { animation: slidePage .25s ease; }
+    #paper.flip { animation: flipPage .5s ease; }
+
+    @keyframes slidePage {
+      from { opacity: .35; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes flipPage {
+      0% { transform: rotateY(0); }
+      45% { transform: rotateY(-35deg); opacity: .65; }
+      100% { transform: rotateY(0); opacity: 1; }
+    }
+
+    .reader-tools { display: grid; gap: 10px; }
+    .reader-tools .row > button { flex: 1; }
+
+    input[type=number], input[type=text], textarea {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 11px;
+      border-radius: 10px;
+      max-width: 100%;
+    }
+
+    input[type=number] { width: 76px; }
+
+    progress {
+      width: 100%;
+      height: 6px;
+      accent-color: var(--accent);
+    }
+
+    .bookmark-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bookmark-item:last-child { border-bottom: 0; }
+
+    .bookmark-item button { padding: 8px 10px; }
+
+    #message {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      font-size: 11px;
+      padding: 10px 20px 30px;
+    }
+
+    @media (min-width: 600px) {
+      .book-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .cover { height: 145px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Mi <span>biblioteca</span></h1>
+      <div class="subtitle">TU ESPACIO PERSONAL DE LECTURA</div>
+    </div>
+    <button id="themeBtn" aria-label="Cambiar tema">☾</button>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Tu universo de libros</h2>
+      <p class="muted">
+        Tus historias favoritas, reunidas en un solo lugar.
+      </p>
+      <label class="upload primary">
+        ＋ Importar PDF
+        <input id="fileInput" type="file" accept=".pdf,application/pdf">
+      </label>
+      <p id="message" class="muted" role="status" aria-live="polite">
+        Importá tu primer libro para comenzar.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="row between">
+        <h2>Mi colección</h2>
+        <span class="muted" id="bookCount">0 libros</span>
+      </div>
+      <div id="bookList" class="book-list"></div>
+      <p id="emptyLibrary" class="muted">
+        Todavía no tenés libros guardados.
+      </p>
+    </section>
+
+    <section class="card" id="readerCard" hidden>
+      <div class="row between">
+        <div>
+          <h2 id="readerTitle">Leyendo</h2>
+          <p id="pageInfo" class="muted">Página 1</p>
+        </div>
+        <button id="closeReader">Cerrar</button>
+      </div>
+
+      <progress id="progress" value="0" max="100"></progress>
+
+      <div id="reader">
+        <div id="paper">
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="reader-tools">
+        <div class="row">
+          <button id="prevBtn">← Anterior</button>
+          <button id="nextBtn" class="primary">Siguiente →</button>
+        </div>
+
+        <div class="row">
+          <label for="pageNumber" class="muted">Ir a página:</label>
+          <input id="pageNumber" type="number" min="1" value="1">
+          <button id="goBtn">Ir</button>
+        </div>
+
+        <div class="row">
+          <button id="slideBtn">Deslizamiento</button>
+          <button id="flipBtn">Efecto de página</button>
+        </div>
+
+        <div class="row">
+          <button id="markBtn" class="primary">☆ Guardar marcador</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Mis marcadores</h2>
+      <div id="marks">
+        <p class="muted">Las páginas que guardes aparecerán aquí.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Sobre tu biblioteca</h2>
+      <p class="muted">
+        Los libros y el progreso se guardan en este navegador.
+        No se suben a una cuenta ni se sincronizan automáticamente
+        con otros dispositivos. Conservá copias de tus PDF originales.
+      </p>
+    </section>
+  </main>
+
+  <footer>MI BIBLIOTECA · Hecho para disfrutar la lectura 💜</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = id => document.getElementById(id);
+
+      const DB_NAME = 'mi-biblioteca-db';
+      const STORE = 'books';
+
+      let db;
+      let currentBook = null;
+      let pdfDoc = null;
+      let currentPage = 1;
+      let totalPages = 0;
+      let animationMode = 'slide';
+      let renderTask = null;
+      let renderToken = 0;
+
+      const message = text => {
+        $('message').textContent = text;
+      };
+
+      function openDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, 1);
+
+          request.onupgradeneeded = () => {
+            const database = request.result;
+            if (!database.objectStoreNames.contains(STORE)) {
+              database.createObjectStore(STORE, { keyPath: 'id' });
+            }
+          };
+
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      function getBook(id) {
+        return new Promise((resolve, reject) => {
+          const request = db.transaction(STORE)
+            .objectStore(STORE).get(id);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      function getAllBooks() {
+        return new Promise((resolve, reject) => {
+          const request = db.transaction(STORE)
+            .objectStore(STORE).getAll();
+          request.onsuccess = () => resolve(request.result || []);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      function putBook(book) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE, 'readwrite');
+          tx.objectStore(STORE).put(book);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(tx.error);
+        });
+      }
+
+      function deleteBook(id) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE, 'readwrite');
+          tx.objectStore(STORE).delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+
+      function makeId(file) {
+        return `${file.name}_${file.size}_${file.lastModified}`;
+      }
+
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, ch => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[ch]);
+      }
+
+      async function refreshLibrary() {
+        const books = await getAllBooks();
+        $('bookCount').textContent =
+          `${books.length} ${books.length === 1 ? 'libro' : 'libros'}`;
+
+        $('emptyLibrary').hidden = books.length > 0;
+        $('bookList').replaceChildren();
+
+        books.sort((a, b) => b.addedAt - a.addedAt);
+
+        for (const book of books) {
+          const card = document.createElement('article');
+          card.className = 'book';
+
+          card.innerHTML = `
+            <div class="cover"><span>▤</span></div>
+            <div class="book-name">${escapeHTML(book.name)}</div>
+            <div class="book-meta">
+              ${book.totalPages || 'PDF'} páginas · ${Math.round(book.size / 1024)} KB
+            </div>
+            <div class="book-actions">
+              <button class="open-book">Leer</button>
+              <button class="delete-book danger" aria-label="Eliminar libro">×</button>
+            </div>
+          `;
+
+          card.querySelector('.open-book').addEventListener('click', () => {
+            openBook(book.id);
+          });
+
+          card.querySelector('.delete-book').addEventListener('click', async () => {
+            if (!confirm(`¿Eliminar "${book.name}" de tu biblioteca?`)) return;
+
+            if (currentBook && currentBook.id === book.id) {
+              closeReader();
+            }
+
+            await deleteBook(book.id);
+            await refreshLibrary();
+            await refreshMarks();
+            message('Libro eliminado de tu biblioteca.');
+          });
+
+          $('bookList').appendChild(card);
+        }
+      }
+
+      async function importPDF(file) {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.pdf') &&
+            file.type !== 'application/pdf') {
+          message('Elegí un archivo PDF válido.');
+          return;
+        }
+
+        if (file.size === 0) {
+          message('El archivo está vacío.');
+          return;
+        }
+
+        message('Importando PDF…');
+
+        try {
+          const buffer = await file.arrayBuffer();
+
+          // Comprobación básica de la firma de un PDF.
+          const signature = new TextDecoder().decode(
+            new Uint8Array(buffer, 0, Math.min(5, buffer.byteLength))
+          );
+
+          if (!signature.startsWith('%PDF-')) {
+            throw new Error('El archivo no parece ser un PDF válido.');
+          }
+
+          const id = makeId(file);
+          const existing = await getBook(id);
+
+          const book = {
+            id,
+            name: file.name,
+            size: file.size,
+            addedAt: existing?.addedAt || Date.now(),
+            data: buffer,
+            currentPage: existing?.currentPage || 1,
+            totalPages: existing?.totalPages || 0,
+            marks: existing?.marks || []
+          };
+
+          // Guardamos el archivo completo en el almacenamiento del navegador.
+          await putBook(book);
+          await refreshLibrary();
+          await openBook(id);
+          message('PDF guardado en tu biblioteca.');
+        } catch (error) {
+          console.error(error);
+          message(
+            'No se pudo importar el PDF. Comprobá que el archivo sea válido ' +
+            'y que el navegador tenga espacio disponible.\n' +
+            (error.message || '')
+          );
+        }
+      }
+
+      async function openBook(id) {
+        try {
+          const book = await getBook(id);
+          if (!book) {
+            message('No se encontró ese libro.');
+            return;
+          }
+
+          message('Abriendo libro…');
+
+          if (renderTask) {
+            try { renderTask.cancel(); } catch (_) {}
+            renderTask = null;
+          }
+
+          if (pdfDoc) {
+            try { await pdfDoc.destroy(); } catch (_) {}
+          }
+
+          currentBook = book;
+
+          const loadingTask = pdfjsLib.getDocument({
+            data: new Uint8Array(book.data.slice(0))
+          });
+
+          pdfDoc = await loadingTask.promise;
+          totalPages = pdfDoc.numPages;
+          currentPage = Math.min(
+            Math.max(1, book.currentPage || 1), totalPages
+          );
+
+          currentBook.totalPages = totalPages;
+          currentBook.currentPage = currentPage;
+          await putBook(currentBook);
+
+          $('readerTitle').textContent = book.name;
+          $('readerCard').hidden = false;
+          $('pageNumber').max = totalPages;
+
+          await renderPage();
+          await refreshLibrary();
+          await refreshMarks();
+
+          $('readerCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          message('Libro listo para leer.');
+        } catch (error) {
+          console.error(error);
+          message('No se pudo abrir el PDF. Probá importarlo nuevamente.');
+        }
+      }
+
+      async function renderPage() {
+        if (!pdfDoc || !currentBook) return;
+
+        const token = ++renderToken;
+
+        if (renderTask) {
+          try { renderTask.cancel(); } catch (_) {}
+          renderTask = null;
+        }
+
+        try {
+          const page = await pdfDoc.getPage(currentPage);
+          if (token !== renderToken) return;
+
+          const holder = $('reader');
+          const maxWidth = Math.max(240, holder.clientWidth - 2);
+          const base = page.getViewport({ scale: 1 });
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const scale = Math.min(maxWidth / base.width, 2);
+
+          const viewport = page.getViewport({ scale: scale * dpr });
+          const canvas = $('pdfCanvas');
+          const context = canvas.getContext('2d', { alpha: false });
+
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
+          canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
+          canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
+
+          renderTask = page.render({
+            canvasContext: context,
+            viewport
+          });
+
+          await renderTask.promise;
+          if (token !== renderToken) return;
+
+          renderTask = null;
+
+          $('paper').classList.remove('slide', 'flip');
+          void $('paper').offsetWidth;
+          $('paper').classList.add(animationMode);
+
+          $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+          $('pageNumber').value = currentPage;
+          $('progress').value = currentPage / totalPages * 100;
+          $('prevBtn').disabled = currentPage <= 1;
+          $('nextBtn').disabled = currentPage >= totalPages;
+
+          currentBook.currentPage = currentPage;
+          currentBook.totalPages = totalPages;
+          await putBook(currentBook);
+        } catch (error) {
+          if (error?.name !== 'RenderingCancelledException') {
+            console.error(error);
+            message('No se pudo mostrar esta página.');
+          }
+        }
+      }
+
+      async function goToPage(pageNumber) {
+        if (!pdfDoc) return;
+        const next = Math.floor(Number(pageNumber));
+
+        if (!Number.isFinite(next) || next < 1 || next > totalPages) {
+          message(`Ingresá una página entre 1 y ${totalPages}.`);
+          return;
+        }
+
+        currentPage = next;
+        await renderPage();
+      }
+
+      function closeReader() {
+        renderToken++;
+
+        if (renderTask) {
+          try { renderTask.cancel(); } catch (_) {}
+          renderTask = null;
+        }
+
+        if (pdfDoc) {
+          pdfDoc.destroy().catch(() => {});
+        }
+
+        pdfDoc = null;
+        currentBook = null;
+        totalPages = 0;
+        $('readerCard').hidden = true;
+      }
+
+      async function saveBookmark() {
+        if (!currentBook) {
+          message('Primero abrí un libro.');
+          return;
+        }
+
+        const marks = currentBook.marks || [];
+
+        if (marks.some(mark => mark.page === currentPage)) {
+          message('Esta página ya tiene un marcador.');
+          return;
+        }
+
+        marks.push({
+          page: currentPage,
+          createdAt: Date.now()
+        });
+
+        currentBook.marks = marks;
+        await putBook(currentBook);
+        await refreshMarks();
+        message(`Marcador guardado en la página ${currentPage}.`);
+      }
+
+      async function refreshMarks() {
+        const books = await getAllBooks();
+        const list = [];
+
+        books.forEach(book => {
+          (book.marks || []).forEach(mark => {
+            list.push({ bookId: book.id, name: book.name, page: mark.page });
+          });
+        });
+
+        $('marks').replaceChildren();
+
+        if (!list.length) {
+          const p = document.createElement('p');
+          p.className = 'muted';
+          p.textContent = 'Las páginas que guardes aparecerán aquí.';
+          $('marks').appendChild(p);
+          return;
+        }
+
+        list.forEach(mark => {
+          const row = document.createElement('div');
+          row.className = 'bookmark-item';
+
+          const label = document.createElement('span');
+          label.textContent = `${mark.name} · Página ${mark.page}`;
+
+          const button = document.createElement('button');
+          button.textContent = 'Abrir';
+          button.addEventListener('click', async () => {
+            await openBook(mark.bookId);
+            await goToPage(mark.page);
+          });
+
+          row.append(label, button);
+          $('marks').appendChild(row);
+        });
+      }
+
+      $('fileInput').addEventListener('change', async event => {
+        const file = event.target.files?.[0];
+        await importPDF(file);
+        event.target.value = '';
+      });
+
+      $('prevBtn').addEventListener('click', () => {
+        if (currentPage > 1) goToPage(currentPage - 1);
+      });
+
+      $('nextBtn').addEventListener('click', () => {
+        if (currentPage < totalPages) goToPage(currentPage + 1);
+      });
+
+      $('goBtn').addEventListener('click', () => {
+        goToPage($('pageNumber').value);
+      });
+
+      $('pageNumber').addEventListener('keydown', event => {
+        if (event.key === 'Enter') goToPage($('pageNumber').value);
+      });
+
+      $('slideBtn').addEventListener('click', () => {
+        animationMode = 'slide';
+        message('Animación de deslizamiento seleccionada.');
+      });
+
+      $('flipBtn').addEventListener('click', () => {
+        animationMode = 'flip';
+        message('Efecto visual de página seleccionada.');
+      });
+
+      $('markBtn').addEventListener('click', saveBookmark);
+      $('closeReader').addEventListener('click', closeReader);
+
+      $('themeBtn').addEventListener('click', () => {
+        document.body.classList.toggle('light');
+        const isLight = document.body.classList.contains('light');
+        $('themeBtn').textContent = isLight ? '☀' : '☾';
+        try {
+          localStorage.setItem('mi-biblioteca-theme', isLight ? 'light' : 'dark');
+        } catch (_) {}
+      });
+
+      // Deslizar el dedo hacia la izquierda o derecha para cambiar de página.
+      let touchX = null;
+      $('reader').addEventListener('touchstart', event => {
+        touchX = event.changedTouches[0].clientX;
+      }, { passive: true });
+
+      $('reader').addEventListener('touchend', event => {
+        if (touchX === null) return;
+
+        const diff = event.changedTouches[0].clientX - touchX;
+        touchX = null;
+
+        if (Math.abs(diff) < 60) return;
+
+        if (diff < 0 && currentPage < totalPages) {
+          goToPage(currentPage + 1);
+        } else if (diff > 0 && currentPage > 1) {
+          goToPage(currentPage - 1);
+        }
+      }, { passive: true });
+
+      async function init() {
+        try {
+          if (!('indexedDB' in window)) {
+            throw new Error('Este navegador no admite el almacenamiento necesario.');
+          }
+
+          db = await openDatabase();
+
+          if (localStorage.getItem('mi-biblioteca-theme') === 'light') {
+            document.body.classList.add('light');
+            $('themeBtn').textContent = '☀';
+          }
+
+          await refreshLibrary();
+          await refreshMarks();
+          message('Tu biblioteca está lista. Importá un PDF.');
+        } catch (error) {
+          console.error(error);
+          message('No se pudo iniciar el almacenamiento. Recargá la página o probá otro navegador.');
+        }
+      }
+
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        init();
+      } else {
+        message('No se pudo cargar el lector PDF. Revisá tu conexión a internet y recargá.');
+      }
+    })();
+  </script>
+</body>
+</html>
+
