@@ -12,7 +12,16 @@
 
   <!-- StPageFlip: efecto realista de pasar páginas -->
   <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-
+<script>
+  window.addEventListener("load", function () {
+    alert(
+      window.St && window.St.PageFlip
+        ? "StPageFlip se cargó correctamente 💜"
+        : "StPageFlip NO se cargó. Hay que corregir el enlace."
+    );
+  });
+</script>
+  
   <style>
     :root {
       --bg: #100b19;
